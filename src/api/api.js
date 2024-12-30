@@ -1,6 +1,20 @@
 import { calculateReadingTime } from "../utils/time.js";
 
 /**
+ * Utility function to handle fetch responses.
+ *
+ * @param {Response} response - Fetch API response object.
+ * @param {string} errorMessage - Custom error message for failed response.
+ * @returns {Promise<any>} - Parsed JSON data from the response.
+ */
+async function handleFetchResponse(response, errorMessage) {
+    if (!response.ok) {
+        throw new Error(`${errorMessage}: ${response.statusText} || "Unknown Error"}`);
+    }
+    return response.json();
+}
+
+/**
  * Fetch subscription feeds filtered by a specific category label.
  *
  * @param {Object} config - The configuration object.
@@ -17,11 +31,7 @@ export async function fetchSubscriptions({ subscriptionUrl }, categoryLabel) {
         referrerPolicy: 'strict-origin-when-cross-origin',
     });
 
-    if (!response.ok) {
-        throw new Error(`Failed to fetch subscriptions: ${response.statusText}`);
-    }
-
-    const data = await response.json();
+    const data = await handleFetchResponse(response, "Failed to fetch subscriptions");
     return data.subscriptions.filter(feed =>
         feed.categories.some(category => category.label === categoryLabel)
     );
@@ -45,18 +55,14 @@ export async function fetchLatestPost(feedId, { feedBaseUrl }) {
         referrerPolicy: 'strict-origin-when-cross-origin',
     });
 
-    if (!response.ok) {
-        throw new Error(`Failed to fetch latest post for feed ID: ${feedId}`);
-    }
+    const feedData = await handleFetchResponse(response, `Failed to fetch latest post for feed ID: ${feedId}`);
 
-    const feedData = await response.json();
-    const latestPost = feedData.items[0];
-
-    if (!latestPost) {
+    if (!feedData.items || !feedData.items[0]) {
         console.warn(`No posts found for feed ID: ${feedId}`);
         return null;
     }
 
+    const latestPost = feedData.items[0];
     const pubDate = new Date(latestPost.published * 1000);
 
     if (isNaN(pubDate.getTime())) {
@@ -66,9 +72,9 @@ export async function fetchLatestPost(feedId, { feedBaseUrl }) {
 
     return {
         postTitle: latestPost.title,
-        postUrl: latestPost.alternate[0].href,
+        postUrl: latestPost.alternate[0]?.href,
         pubDate: pubDate,
-        readingTime: calculateReadingTime(latestPost.summary.content),
+        readingTime: calculateReadingTime(latestPost.summary?.content || ''),
     };
 }
 
@@ -86,7 +92,14 @@ export async function fetchFeedsData(feeds, config) {
         feeds.map(async feed => {
             try {
                 const latestPost = await fetchLatestPost(feed.id, config);
-                if (!latestPost) return null;
+                if (!latestPost) {
+                    failedFeeds.push({
+                        id: feed.id,
+                        title: feed.title,
+                        error: 'No posts found',
+                    });
+                    return null;
+                }
 
                 return {
                     feedTitle: feed.title,
