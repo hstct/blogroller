@@ -1,16 +1,5 @@
-import { timeSince } from './time.js';
-
-function validateUrl(url) {
-    try {
-        const parsedUrl = new URL(url);
-        if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
-            return url;
-        }
-    } catch {
-        // Invalid URL
-    }
-    return '#'; // Replace invalid or unsafe URL with a placeholder
-}
+import { escapeHTML, validateUrl } from "./general-utils.js";
+import { timeSince } from './time-utils.js';
 
 /**
  * Sort feeds by publication date in descending order.
@@ -32,8 +21,8 @@ export function sortFeedsByDate(feeds) {
  * @returns {HTMLElement} - DOM element for the feed item.
  **/
 export function createFeedItem(feed) {
-    const feedTitle = sanitize(feed.feedTitle) || 'Untitled Feed';
-    const postTitle = sanitize(feed.postTitle) || 'Untitled Post';
+    const feedTitle = escapeHTML(feed.feedTitle) || 'Untitled Feed';
+    const postTitle = escapeHTML(feed.postTitle) || 'Untitled Post';
 
     let relativeDate = 'Unknown Date';
     if (feed.pubDate) {
@@ -112,17 +101,4 @@ export function createShowMoreLink() {
     showMoreLink.textContent = 'Show More';
     showMoreLink.style.display = 'none'; // Initially hidden
     return showMoreLink;
-}
-
-/**
- * Sanitizes input by escaping HTML special characters.
- *
- * @param {string} input - The input string to sanitize.
- * @returns {string} - A sanitized string safe for embedding in HTML.
- */
-function sanitize(input) {
-    if (typeof input !== 'string') return '';
-    const div = document.createElement('div');
-    div.textContent = input;
-    return div.innerHTML;
 }

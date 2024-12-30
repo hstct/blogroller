@@ -1,4 +1,4 @@
-import { timeSince, calculateReadingTime } from '../src/utils/time.js';
+import { timeSince, calculateReadingTime } from '../src/utils/time-utils.js';
 
 describe('timeSince', () => {
     test('should return "just now" for recent dates', () => {

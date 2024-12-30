@@ -1,4 +1,4 @@
-import { calculateReadingTime } from "../utils/time.js";
+import { calculateReadingTime } from "../utils/time-utils.js";
 
 /**
  * Utility function to handle fetch responses.

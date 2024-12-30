@@ -1,4 +1,4 @@
-import { sortFeedsByDate, createFeedItem } from '../src/utils/feedUtils.js';
+import { sortFeedsByDate, createFeedItem } from '../src/utils/feed-utils.js';
 
 describe('createFeedItem', () => {
     test('should create a valid DOM element for a feed item', () => {
