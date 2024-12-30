@@ -7,7 +7,9 @@ import { timeSince } from './time.js';
  * @returns {Array} - Sorted feeds data.
  */
 export function sortFeedsByDate(feeds) {
-    return feeds.filter(Boolean).sort((a, b) => b.pubDate - a.pubDate);
+    return feeds
+        .filter(feed => feed.pubDate instanceof Date && !isNaN(feed.pubDate))
+        .sort((a, b) => b.pubDate - a.pubDate);
 }
 
 

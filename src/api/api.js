@@ -46,8 +46,7 @@ export async function fetchLatestPost(feedId, { feedBaseUrl }) {
     });
 
     if (!response.ok) {
-        console.error(`Failed to fetch latest post for feed ID: ${feedId}`);
-        return null;
+        throw new Error(`Failed to fetch latest post for feed ID: ${feedId}`);
     }
 
     const feedData = await response.json();
@@ -58,10 +57,10 @@ export async function fetchLatestPost(feedId, { feedBaseUrl }) {
         return null;
     }
 
-    const pubDate = new Date(latestPost.publised * 1000);
+    const pubDate = new Date(latestPost.published * 1000);
 
     if (isNaN(pubDate.getTime())) {
-        console,warn(`Invalid publish date for feed ID: ${feedId}`);
+        console.warn(`Invalid publish date for feed ID: ${feedId}`);
         return null;
     }
 
@@ -96,8 +95,8 @@ export async function fetchFeedsData(feeds, config) {
                     ...latestPost,
                 };
             } catch (error) {
-                console.error(`Error fetching data for feed: ${feed.title}`, error);
-                failedFeeds.push(feed.id);
+                console.error(`Error fetching data for feed:`, error);
+                failedFeeds.push(feed);
                 return null;
             }
         })

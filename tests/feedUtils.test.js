@@ -22,6 +22,7 @@ describe('sortFeedsByDate', () => {
             { pubDate: new Date('2022-01-01') },
             { pubDate: null },
             { pubDate: new Date('2021-01-01') },
+            { pubDate: 'invalid-date' },
         ];
 
         const sorted = sortFeedsByDate(feeds);
