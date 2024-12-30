@@ -56,3 +56,38 @@ describe('Blogroll Configuration Tests', () => {
             .toThrow('Missing required parameter(s): categoryLabel');
     });
 });
+
+describe('Blogroll Tests', () => {
+    let blogroll;
+
+    beforeEach(() => {
+        document.body.innerHTML = '<div id="rss-feed"></div>';
+        blogroll = new Blogroll();
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+        document.body.innerHTML = '';
+    });
+
+    test('should append a trailing slash to proxyUrl if missing', () => {
+        blogroll.initialize({
+            proxyUrl: 'https://proxy-url',
+            categoryLabel: 'test',
+        });
+
+        expect(blogroll.config.proxyUrl).toBe('https://proxy-url/');
+    });
+
+    test('should throw error if feed container is missing', () => {
+        const blogroll = new Blogroll();
+        blogroll.initialize({
+            proxyUrl: 'https://proxy-url/',
+            categoryLabel: 'test',
+        });
+        document.body.innerHTML = '';
+        expect(() => blogroll.getFeedContainer()).toThrow(
+            "Feed container with ID 'rss-feed' not found in the DOM."
+        );
+    });
+});

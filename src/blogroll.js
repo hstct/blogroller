@@ -152,7 +152,7 @@ export class Blogroll {
             return;
         }
 
-        renderFeeds(feeds);
+        this.renderFeeds(feeds);
 
         if (feeds.length > 10) {
             this.showMoreLink = createShowMoreLink();
