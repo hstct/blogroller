@@ -1,5 +1,6 @@
 import { fetchSubscriptions, fetchFeedsData } from './api/api.js';
-import { sortFeedsByDate, createFeedItem, createShowMoreLink } from './utils/feedUtils.js';
+import { sortFeedsByDate, createFeedItem, createShowMoreLink } from './utils/feed-utils.js';
+import { CONFIG } from './config.js';
 
 /**
  * Class to handle Blogroll functionality.
@@ -16,21 +17,18 @@ export class Blogroll {
      * @param {Object} config - Configuration object.
      */
     initialize(config) {
-        const defaults = {
-            documentClass: 'blogroll',
-            subscriptionEndpoint: 'subscription/list',
-            feedEndpoint: 'stream/contents',
-            batchSize: 10,
-        }
-
-        this.config = { ...defaults, ...config };
+        this.config = { ...CONFIG.defaults, ...config };
 
         // Validate required parameters
-        const requiredParams = ['proxyUrl', 'categoryLabel'];
+        const requiredParams = CONFIG.validation.requiredParams;
         for (const param of requiredParams) {
             if (!this.config[param]) {
                 throw new Error(`Missing required parameter: ${param}`);
             }
+        }
+
+        if (!this.config.proxyUrl.endsWith('/')) {
+            this.config.proxyUrl += '/';
         }
 
         // Construct derived URLs
