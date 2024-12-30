@@ -19,13 +19,8 @@ export class Blogroll {
     initialize(config) {
         this.config = { ...CONFIG.defaults, ...config };
 
-        // Validate required parameters
-        const requiredParams = CONFIG.validation.requiredParams;
-        for (const param of requiredParams) {
-            if (!this.config[param]) {
-                throw new Error(`Missing required parameter: ${param}`);
-            }
-        }
+        // Validate the configuration
+        this.validateConfig(this.config);
 
         if (!this.config.proxyUrl.endsWith('/')) {
             this.config.proxyUrl += '/';
@@ -44,7 +39,7 @@ export class Blogroll {
      * @param {Object} config - Configuration object.
      */
     validateConfig(config) {
-        const requireParams = ['proxyUrl', 'categoryLabel'];
+        const requireParams = CONFIG.validation.requiredParams;
         const missingParams = requireParams.filter(param => !config[param]);
 
         if (missingParams.length > 0) {
@@ -95,7 +90,7 @@ export class Blogroll {
             const sortedFeeds = sortFeedsByDate(feedsData);
 
             if (failedFeeds.length > 0) {
-                console.warn('Failed to fetch data for the following feed IDs:', failedFeeds);
+                console.warn('Failed to fetch data for some feeds:', failedFeeds);
             }
 
             this.displayFeeds(sortedFeeds);
@@ -115,7 +110,9 @@ export class Blogroll {
      **/
     renderFeeds(feeds, startIndex = 0) {
         const feedContainer = this.getFeedContainer();
-        feeds.slice(startIndex, startIndex + this.config.batchSize).forEach(feed => {
+        const batch = feeds.slice(startIndex, startIndex + this.config.batchSize);
+
+        batch.forEach(feed => {
             const feedItem = createFeedItem(feed);
             feedContainer.appendChild(feedItem);
         });
@@ -128,9 +125,10 @@ export class Blogroll {
      * @param {Array} feeds - Array of feed data objects.
      **/
     attachShowMoreHandler(showMoreLink, feeds) {
-        const feedContainer = this.getFeedContainer();
         this.showMoreLink.addEventListener('click', (event) => {
             event.preventDefault();
+
+            const feedContainer = this.getFeedContainer();
             const currentCount = feedContainer.querySelectorAll('.feed-item').length;
             this.renderFeeds(feeds, currentCount);
 
@@ -154,11 +152,10 @@ export class Blogroll {
             return;
         }
 
-        this.showMoreLink = createShowMoreLink();
         renderFeeds(feeds);
 
         if (feeds.length > 10) {
-            this.showMoreLink.display = 'block';
+            this.showMoreLink = createShowMoreLink();
             feedContainer.parentElement.appendChild(showMoreLink);
             this.attachShowMoreHandler(showMoreLink, feeds);
         }

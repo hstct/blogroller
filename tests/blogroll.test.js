@@ -53,6 +53,6 @@ describe('Blogroll Configuration Tests', () => {
         const blogroll = new Blogroll();
 
         expect(() => blogroll.initialize({ proxyUrl: 'https://proxy-url' }))
-            .toThrow('Missing required parameter: categoryLabel');
+            .toThrow('Missing required parameter(s): categoryLabel');
     });
 });
