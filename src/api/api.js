@@ -9,7 +9,7 @@ import { calculateReadingTime } from "../utils/time.js";
  */
 async function handleFetchResponse(response, errorMessage) {
     if (!response.ok) {
-        throw new Error(`${errorMessage}: ${response.statusText} || "Unknown Error"}`);
+        throw new Error(`${errorMessage}: ${response.statusText || "Unknown Error"}`);
     }
     return response.json();
 }

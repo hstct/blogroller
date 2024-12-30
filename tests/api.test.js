@@ -123,7 +123,7 @@ describe('API Tests', () => {
                 expect.objectContaining({
                     id: 'feed2',
                     title: 'Feed 2',
-                    error: 'Failed to fetch latest post for feed ID: feed2',
+                    error: 'Failed to fetch latest post for feed ID: feed2: Not Found',
                 })
             );
         });
@@ -165,7 +165,7 @@ describe('Edge Cases', () => {
             expect.objectContaining({ id: 'feed2', title: 'Feed 2', error: 'No posts found' })
         );
         expect(result.failedFeeds).toContainEqual(
-            expect.objectContaining({ id: 'feed3', title: 'Feed 3', error: 'Failed to fetch latest post for feed ID: feed3' })
+            expect.objectContaining({ id: 'feed3', title: 'Feed 3', error: 'Failed to fetch latest post for feed ID: feed3: Not Found' })
         );
     });
 });
