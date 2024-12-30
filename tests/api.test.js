@@ -119,7 +119,13 @@ describe('API Tests', () => {
 
             expect(result.feedsData).toHaveLength(1);
             expect(result.failedFeeds).toHaveLength(1);
-            expect(result.failedFeeds).toEqual([feeds[1]]);
+            expect(result.failedFeeds[0]).toEqual(
+                expect.objectContaining({
+                    id: 'feed2',
+                    title: 'Feed 2',
+                    error: 'Failed to fetch latest post for feed ID: feed2',
+                })
+            );
         });
     });
 });

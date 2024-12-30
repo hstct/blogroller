@@ -96,7 +96,11 @@ export async function fetchFeedsData(feeds, config) {
                 };
             } catch (error) {
                 console.error(`Error fetching data for feed:`, error);
-                failedFeeds.push(feed);
+                failedFeeds.push({
+                    id: feed.id,
+                    title: feed.title,
+                    error: error.message || 'Unknown error',
+                });
                 return null;
             }
         })
