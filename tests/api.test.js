@@ -129,3 +129,43 @@ describe('API Tests', () => {
         });
     });
 });
+
+describe('Edge Cases', () => {
+    test('fetchSubscriptions should handle no feeds', async () => {
+        mockFetch({ subscriptions: [] }); // Empty subscription
+
+        const result = await fetchSubscriptions({ subscriptionUrl: 'https://test-url' }, 'favs');
+        expect(result).toEqual([]);
+    });
+
+    test('fetchLatestPost should handle missing data gracefully', async () => {
+        mockFetch({ items: [{}] }); // Missing expected fields
+
+        const result = await fetchLatestPost('feed123', { feedBaseUrl: 'https://test-url/' });
+        expect(result).toBeNull();
+    });
+
+    test('fetchFeedsData should handle a mix of valid and invalid feeds', async () => {
+        mockFetch(mockResponses.validPost);
+        mockFetch(mockResponses.emptyPost);
+        mockFetch(null, false, 'Not Found');
+
+        const feeds = [
+            { id: 'feed1', title: 'Feed 1', htmlUrl: 'https://feed1-url', iconUrl: 'https://icon1-url' },
+            { id: 'feed2', title: 'Feed 2', htmlUrl: 'https://feed2-url', iconUrl: 'https://icon2-url' },
+            { id: 'feed3', title: 'Feed 3', htmlUrl: 'https://feed3-url', iconUrl: 'https://icon3-url' },
+        ];
+
+        const result = await fetchFeedsData(feeds, { feedBaseUrl: 'https://test-url/' });
+
+        expect(result.feedsData).toHaveLength(1);
+        expect(result.failedFeeds).toHaveLength(2);
+
+        expect(result.failedFeeds).toContainEqual(
+            expect.objectContaining({ id: 'feed2', title: 'Feed 2', error: 'No posts found' })
+        );
+        expect(result.failedFeeds).toContainEqual(
+            expect.objectContaining({ id: 'feed3', title: 'Feed 3', error: 'Failed to fetch latest post for feed ID: feed3' })
+        );
+    });
+});
