@@ -17,9 +17,10 @@ describe('timeSince', () => {
 });
 
 describe('calculateReadingTime', () => {
+    const content = "This is a sample text for testing";
+
     test('should calculate reading time for plain text', () => {
-        const text = 'This is a test sentence with ten words.';
-        expect(calculateReadingTime(text)).toBe('1 min read');
+        expect(calculateReadingTime(content)).toBe('1 min read');
     });
 
     test('should calculate reading time for HTML content', () => {
@@ -29,5 +30,19 @@ describe('calculateReadingTime', () => {
 
     test('should throw error for invalid input', () => {
         expect(() => calculateReadingTime(12345)).toThrow('Invalid content provided to \'calculateReadingTime\'. Expected a string.');
+    });
+
+    test('should throw an error for invalid wordsPerMinute value', () => {
+        expect(() => calculateReadingTime(content, "invalid")).toThrow(
+            "Invalid 'wordsPerMinute' value. Expected a positive number."
+        );
+
+        expect(() => calculateReadingTime(content, -100)).toThrow(
+            "Invalid 'wordsPerMinute' value. Expected a positive number."
+        );
+
+        expect(() => calculateReadingTime(content, 0)).toThrow(
+            "Invalid 'wordsPerMinute' value. Expected a positive number."
+        );
     });
 });
