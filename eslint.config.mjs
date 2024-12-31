@@ -1,6 +1,6 @@
+import globals from 'globals';
 import js from '@eslint/js';
 import pluginPrettier from 'eslint-plugin-prettier';
-import configPrettier from 'eslint-plugin-prettier';
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
@@ -10,9 +10,9 @@ export default [
       ecmaVersion: 'latest',
       sourceType: 'module',
       globals: {
-        ...js.configs.recommended.languageOptions.globals,
-        browser: true,
-        node: true,
+        ...globals.browser,
+        ...globals.node,
+        ...globals.jest,
       },
     },
     plugins: {
@@ -20,7 +20,6 @@ export default [
     },
     rules: {
       ...js.configs.recommended.rules,
-      ...configPrettier.rules,
       'prettier/prettier': 'error',
     },
   },
