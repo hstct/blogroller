@@ -6,7 +6,9 @@
  */
 export function escapeHTML(input) {
   if (typeof input !== 'string') {
-    console.warn('escapeHTML: Non-string input received. Returning empty string.');
+    console.warn(
+      'escapeHTML: Non-string input received. Returning empty string.'
+    );
     return '';
   }
   const div = document.createElement('div');
