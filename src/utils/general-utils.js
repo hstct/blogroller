@@ -34,3 +34,19 @@ export function validateUrl(url, fallback = '#') {
   }
   return fallback;
 }
+
+/**
+ * Helper function to construct a URL with optional query parameters.
+ *
+ * @param {string} baseUrl - The base URL.
+ * @param {string} endpoint - The endpoint to append to the base URL.
+ * @param {Object} [queryParams] - Optional query parameters as key-value pairs.
+ * @returns {string} - The constructed URL.
+ */
+export function constructApiUrl(baseUrl, endpoint, queryParams = {}) {
+  const url = new URL(endpoint, baseUrl);
+  Object.keys(queryParams).forEach((key) =>
+    url.searchParams.append(key, queryParams[key])
+  );
+  return url.toString();
+}

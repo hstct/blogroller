@@ -4,6 +4,7 @@ import {
   createFeedItem,
   createShowMoreLink,
 } from './utils/feed-utils.js';
+import { constructApiUrl } from './utils/general-utils.js';
 import { CONFIG } from './config.js';
 import { DEFAULT_CONTAINER_ID, MESSAGES } from './constants.js';
 
@@ -32,8 +33,15 @@ export class Blogroll {
     }
 
     // Construct derived URLs
-    this.config.subscriptionUrl = `${this.config.proxyUrl}${this.config.subscriptionEndpoint}?output=json`;
-    this.config.feedBaseUrl = `${this.config.proxyUrl}${this.config.feedEndpoint}`;
+    this.config.subscriptionUrl = constructApiUrl(
+      this.config.proxyUrl,
+      this.config.subscriptionEndpoint,
+      { output: 'json' }
+    );
+    this.config.feedBaseUrl = constructApiUrl(
+      this.config.proxyUrl,
+      this.config.feedEndpoint
+    );
 
     this.loadFeeds();
   }
@@ -116,12 +124,15 @@ export class Blogroll {
    **/
   renderFeeds(feeds, startIndex = 0) {
     const feedContainer = this.getFeedContainer();
+    const fragment = document.createDocumentFragment();
     const batch = feeds.slice(startIndex, startIndex + this.config.batchSize);
 
     batch.forEach((feed) => {
       const feedItem = createFeedItem(feed);
-      feedContainer.appendChild(feedItem);
+      fragment.appendChild(feedItem);
     });
+
+    feedContainer.appendChild(fragment);
   }
 
   /**
