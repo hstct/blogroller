@@ -5,6 +5,7 @@ import {
   createShowMoreLink,
 } from './utils/feed-utils.js';
 import { CONFIG } from './config.js';
+import { DEFAULT_CONTAINER_ID, MESSAGES } from './constants.js';
 
 /**
  * Class to handle Blogroll functionality.
@@ -75,7 +76,7 @@ export class Blogroll {
    * @returns {HTMLElment} - The feed container element.
    */
   getFeedContainer() {
-    const containerId = this.config.containerId || 'rss-feed';
+    const containerId = this.config.containerId || DEFAULT_CONTAINER_ID;
     const container = document.getElementById(containerId);
 
     if (!container) {
@@ -92,7 +93,7 @@ export class Blogroll {
    */
   async loadFeeds() {
     const feedContainer = this.getFeedContainer();
-    feedContainer.innerHTML = '<p>Loading latest posts...</p>';
+    feedContainer.innerHTML = MESSAGES.LOADING;
 
     try {
       // Fetch and filter subscriptions by category
@@ -110,8 +111,7 @@ export class Blogroll {
       this.displayFeeds(sortedFeeds);
     } catch (error) {
       console.error('Error initializing blogroll:', error);
-      feedContainer.innerHTML =
-        '<p>Failed to load posts. Please try again later.</p>';
+      feedContainer.innerHTML = MESSAGES.LOAD_FAILED;
     }
   }
 
@@ -162,8 +162,7 @@ export class Blogroll {
     feedContainer.innerHTML = ''; // Clear loading indicator
 
     if (feeds.length === 0) {
-      feedContainer.innerHTML =
-        '<p>No latest posts available at this time.</p>';
+      feedContainer.innerHTML = MESSAGES.NO_POSTS;
       return;
     }
 
