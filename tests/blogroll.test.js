@@ -40,23 +40,59 @@ describe('Blogroll Configuration Tests', () => {
   test('should initialize with default config values', () => {
     const blogroll = new Blogroll();
     blogroll.initialize({
-      proxyUrl: 'https://proxy-url',
-      categoryLabel: 'favorites',
+      proxyUrl: 'https://proxy.test.com',
+      categoryLabel: 'Favorites',
     });
 
-    expect(blogroll.config.subscriptionUrl).toBe(
-      'https://proxy-url/test/subscription?output=json'
-    );
-    expect(blogroll.config.feedBaseUrl).toBe('https://proxy-url/test/feed');
-    expect(blogroll.config.batchSize).toBe(5);
+    expect(blogroll.config).toMatchObject({
+      documentClass: 'test-blogroll',
+      subscriptionEndpoint: 'test/subscription',
+      feedEndpoint: 'test/feed',
+      batchSize: 5,
+      proxyUrl: 'https://proxy.test.com/',
+      categoryLabel: 'Favorites',
+    });
   });
 
   test('should throw error for missing required parameters', () => {
     const blogroll = new Blogroll();
 
+    expect(() => blogroll.initialize({ categoryLabel: 'Favorites' })).toThrow(
+      'Missing required parameter(s): proxyUrl'
+    );
+
     expect(() =>
-      blogroll.initialize({ proxyUrl: 'https://proxy-url' })
+      blogroll.initialize({ proxyUrl: 'https://proxy.test.com' })
     ).toThrow('Missing required parameter(s): categoryLabel');
+  });
+
+  test.skip('should log an error for invalid container ID', () => {
+    const blogroll = new Blogroll();
+    const invalidContainerId = 'non-existent-id';
+
+    expect(() => {
+      blogroll.initialize({
+        proxyUrl: 'https://proxy.test.com',
+        categoryLabel: 'Favorites',
+        containerId: invalidContainerId,
+      });
+    }).toThrow(
+      new Error(
+        `Feed container with ID '${invalidContainerId}' not found in the DOM.`
+      )
+    );
+  });
+
+  test('should merge custom configuration with defaults', () => {
+    const blogroll = new Blogroll();
+    blogroll.initialize({
+      proxyUrl: 'https://proxy.test.com',
+      categoryLabel: 'Favorites',
+      batchSize: 10,
+    });
+
+    expect(blogroll.config.batchSize).toBe(10);
+    expect(blogroll.config.documentClass).toBe('test-blogroll');
   });
 });
 
