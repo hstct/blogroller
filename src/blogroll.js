@@ -138,7 +138,7 @@ export class Blogroll {
    * @param {HTMLElement} showMoreLink - The "Show More" link element.
    * @param {Array} feeds - Array of feed data objects.
    **/
-  attachShowMoreHandler(showMoreLink, feeds) {
+  attachShowMoreHandler(feeds) {
     this.showMoreLink.addEventListener('click', (event) => {
       event.preventDefault();
 
@@ -171,8 +171,8 @@ export class Blogroll {
 
     if (feeds.length > 10) {
       this.showMoreLink = createShowMoreLink();
-      feedContainer.parentElement.appendChild(showMoreLink);
-      this.attachShowMoreHandler(showMoreLink, feeds);
+      feedContainer.parentElement.appendChild(this.showMoreLink);
+      this.attachShowMoreHandler(feeds);
     }
   }
 }
