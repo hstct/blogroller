@@ -49,7 +49,7 @@ export class Blogroll {
 
     if (missingParams.length > 0) {
       throw new Error(
-        `Missing required parameter(s): ${missingParams.join(', ')}`
+        MESSAGES.ERROR.MISSING_PARAMETER(missingParams.join(', '))
       );
     }
 
@@ -57,16 +57,11 @@ export class Blogroll {
       typeof config.proxyUrl !== 'string' ||
       !config.proxyUrl.startsWith('http')
     ) {
-      throw new Error("Invalid 'proxyUrl'. Must be a valid URL string.");
+      throw new Error(MESSAGES.ERROR.INVALID_PROXY_URL);
     }
 
     if (typeof config.categoryLabel !== 'string') {
-      throw new Error("Invalid 'categoryLabel'. Must be a string.");
-    }
-
-    // Optional parameters validation (if necessary)
-    if (config.containerId && typeof config.containerId !== 'string') {
-      throw new Error("Invalid 'containerId'. Must be a string.");
+      throw new Error(MESSAGES.ERROR.INVALID_CATEGORY_LABEL);
     }
   }
 
@@ -80,9 +75,7 @@ export class Blogroll {
     const container = document.getElementById(containerId);
 
     if (!container) {
-      throw new Error(
-        `Feed container with ID '${containerId}' not found in the DOM.`
-      );
+      throw new Error(MESSAGES.ERROR.MISSING_CONTAINER(containerId));
     }
 
     return container;
@@ -105,12 +98,12 @@ export class Blogroll {
       const sortedFeeds = sortFeedsByDate(feedsData);
 
       if (failedFeeds.length > 0) {
-        console.warn('Failed to fetch data for some feeds:', failedFeeds);
+        console.warn(MESSAGES.ERROR.FETCH_FAILED, failedFeeds);
       }
 
       this.displayFeeds(sortedFeeds);
     } catch (error) {
-      console.error('Error initializing blogroll:', error);
+      console.error(MESSAGES.ERROR.LOAD_FEEDS_FAILED, error);
       feedContainer.innerHTML = MESSAGES.LOAD_FAILED;
     }
   }
