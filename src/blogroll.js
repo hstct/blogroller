@@ -113,7 +113,6 @@ export class Blogroll {
    *
    * @param {Array} feeds - Array of feed data objects.
    * @param {number} startIndex - Starting index of feeds to render.
-   * @param {number} count - Number of feeds to render.
    **/
   renderFeeds(feeds, startIndex = 0) {
     const feedContainer = this.getFeedContainer();
@@ -128,7 +127,6 @@ export class Blogroll {
   /**
    * Attach a "Show More" link to dynamically load more feeds.
    *
-   * @param {HTMLElement} showMoreLink - The "Show More" link element.
    * @param {Array} feeds - Array of feed data objects.
    **/
   attachShowMoreHandler(feeds) {
@@ -161,8 +159,9 @@ export class Blogroll {
 
     this.renderFeeds(feeds);
 
-    if (feeds.length > 10) {
+    if (feeds.length > this.config.batchSize) {
       this.showMoreLink = createShowMoreLink();
+      this.showMoreLink.style.display = 'block';
       feedContainer.parentElement.appendChild(this.showMoreLink);
       this.attachShowMoreHandler(feeds);
     }
