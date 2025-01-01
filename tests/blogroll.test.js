@@ -41,7 +41,7 @@ describe('Blogroll Configuration Tests', () => {
     const blogroll = new Blogroll();
     blogroll.initialize({
       proxyUrl: 'https://proxy.test.com',
-      categoryLabel: 'Favorites',
+      categoryLabel: 'test',
     });
 
     expect(blogroll.config).toMatchObject({
@@ -50,7 +50,7 @@ describe('Blogroll Configuration Tests', () => {
       feedEndpoint: 'test/feed',
       batchSize: 5,
       proxyUrl: 'https://proxy.test.com/',
-      categoryLabel: 'Favorites',
+      categoryLabel: 'test',
     });
   });
 
@@ -73,7 +73,7 @@ describe('Blogroll Configuration Tests', () => {
     expect(() => {
       blogroll.initialize({
         proxyUrl: 'https://proxy.test.com',
-        categoryLabel: 'Favorites',
+        categoryLabel: 'test',
         containerId: invalidContainerId,
       });
     }).toThrow(
@@ -87,12 +87,23 @@ describe('Blogroll Configuration Tests', () => {
     const blogroll = new Blogroll();
     blogroll.initialize({
       proxyUrl: 'https://proxy.test.com',
-      categoryLabel: 'Favorites',
+      categoryLabel: 'test',
       batchSize: 10,
     });
 
     expect(blogroll.config.batchSize).toBe(10);
     expect(blogroll.config.documentClass).toBe('test-blogroll');
+  });
+
+  test('should handle invalid URL for proxyUrl', () => {
+    const blogroll = new Blogroll();
+
+    expect(() =>
+      blogroll.initialize({
+        proxyUrl: 'invalid-url',
+        categoryLabel: 'test',
+      })
+    ).toThrow("Invalid 'proxyUrl'. Must be a valid URL string.");
   });
 });
 
@@ -111,22 +122,66 @@ describe('Blogroll Tests', () => {
 
   test('should append a trailing slash to proxyUrl if missing', () => {
     blogroll.initialize({
-      proxyUrl: 'https://proxy-url',
+      proxyUrl: 'https://proxy.test.com',
       categoryLabel: 'test',
     });
 
-    expect(blogroll.config.proxyUrl).toBe('https://proxy-url/');
+    expect(blogroll.config.proxyUrl).toBe('https://proxy.test.com/');
   });
 
   test('should throw error if feed container is missing', () => {
-    const blogroll = new Blogroll();
     blogroll.initialize({
-      proxyUrl: 'https://proxy-url/',
+      proxyUrl: 'https://proxy.test.com',
       categoryLabel: 'test',
     });
     document.body.innerHTML = '';
     expect(() => blogroll.getFeedContainer()).toThrow(
       "Feed container with ID 'rss-feed' not found in the DOM."
     );
+  });
+
+  test('should initialize multiple instances of Blogroll independently', () => {
+    const blogroll1 = new Blogroll();
+    const blogroll2 = new Blogroll();
+
+    blogroll1.initialize({
+      proxyUrl: 'https://proxy1.test.com',
+      categoryLabel: 'Favorites',
+    });
+    blogroll2.initialize({
+      proxyUrl: 'https://proxy2.test.com',
+      categoryLabel: 'Work',
+    });
+
+    expect(blogroll1.config.proxyUrl).toBe('https://proxy1.test.com/');
+    expect(blogroll2.config.proxyUrl).toBe('https://proxy2.test.com/');
+  });
+
+  test('should handle invalid or empty categoryLabel values', () => {
+    expect(() =>
+      blogroll.initialize({
+        proxyUrl: 'https://proxy.test.com/',
+        categoryLabel: '',
+      })
+    ).toThrow('Missing required parameter(s): categoryLabel');
+
+    expect(() =>
+      blogroll.initialize({
+        proxyUrl: 'https://proxy.test.com/',
+        categoryLabel: null,
+      })
+    ).toThrow('Missing required parameter(s): categoryLabel');
+  });
+
+  test('should initialize with a custom container ID', () => {
+    document.body.innerHTML = '<div id="custom-container"></div>';
+    blogroll.initialize({
+      proxyUrl: 'https://proxy.test.com/',
+      categoryLabel: 'test',
+      containerId: 'custom-container',
+    });
+
+    const container = blogroll.getFeedContainer();
+    expect(container.id).toBe('custom-container');
   });
 });
