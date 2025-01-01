@@ -36,7 +36,6 @@ const mockFetch = (response, ok = true, statusText = 'Error') => {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  jest.spyOn(console, 'error').mockImplementation(() => {});
   jest.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
@@ -175,6 +174,9 @@ describe('API Tests', () => {
     });
 
     test('should handle errors for some feeds', async () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       mockFetch(mockResponses.validPost);
       mockFetch(null, false, 'Not Found');
 
@@ -192,7 +194,16 @@ describe('API Tests', () => {
             '[Blogroll] Failed to fetch latest post for feed ID: feed2: Not Found',
         })
       );
+
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[Blogroll] Failed to fetch data for some feeds:',
+        expect.any(Error)
+      );
+
+      consoleErrorSpy.mockRestore();
     });
+
     test('should handle an empty feeds array', async () => {
       const result = await fetchFeedsData([], {
         feedBaseUrl: 'https://test-url/',
@@ -203,6 +214,9 @@ describe('API Tests', () => {
     });
 
     test('should handle feeds with mixed valid and invalid content', async () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       mockFetch(mockResponses.validPost);
       mockFetch({ items: [{ invalid: 'data' }] });
       mockFetch(null, false, 'Not Found');
@@ -239,6 +253,14 @@ describe('API Tests', () => {
             '[Blogroll] Failed to fetch latest post for feed ID: feed3: Not Found',
         })
       );
+
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[Blogroll] Failed to fetch data for some feeds:',
+        expect.any(Error)
+      );
+
+      consoleErrorSpy.mockRestore();
     });
   });
 });
@@ -264,6 +286,9 @@ describe('Edge Cases', () => {
   });
 
   test('fetchFeedsData should handle a mix of valid and invalid feeds', async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     mockFetch(mockResponses.validPost);
     mockFetch(mockResponses.emptyPost);
     mockFetch(null, false, 'Not Found');
@@ -311,5 +336,13 @@ describe('Edge Cases', () => {
           '[Blogroll] Failed to fetch latest post for feed ID: feed3: Not Found',
       })
     );
+
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      '[Blogroll] Failed to fetch data for some feeds:',
+      expect.any(Error)
+    );
+
+    consoleErrorSpy.mockRestore();
   });
 });
