@@ -1,4 +1,4 @@
-import { getRelativeDate } from "../../src/utils/date.js";
+import { getRelativeDate } from '../../src/utils/date.js';
 
 describe('date.js', () => {
   describe('getRelativeDate', () => {
@@ -33,7 +33,7 @@ describe('date.js', () => {
       const twoMonthsAgo = new Date();
       twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
       const result = getRelativeDate(twoMonthsAgo);
-      
+
       expect(result).toMatch(/2 months ago/);
     });
 
