@@ -1,10 +1,6 @@
-import { fetchSubscriptions, fetchFeedsData } from './api/api.js';
-import {
-  sortFeedsByDate,
-  createFeedItem,
-  createShowMoreLink,
-} from './utils/feed-utils.js';
-import { constructApiUrl } from './utils/general-utils.js';
+import { fetchSubscriptions, fetchFeedsData } from './api.js';
+import { createFeedItem, createShowMoreLink } from './utils/dom.js';
+import { constructApiUrl, sortFeedsByDate } from './utils/common.js';
 import { CONFIG } from './config.js';
 import { DEFAULT_CONTAINER_ID, MESSAGES } from './constants.js';
 

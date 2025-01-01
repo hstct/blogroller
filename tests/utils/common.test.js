@@ -1,44 +1,7 @@
-import { timeSince, calculateReadingTime } from '../src/utils/time-utils.js';
-
-describe('timeSince', () => {
-  test('should return "just now" for recent dates', () => {
-    const now = new Date();
-    expect(timeSince(now)).toBe('just now');
-  });
-
-  test('should return correct relative time for past dates', () => {
-    const oneDayAgo = new Date(Date.now() - 86400000);
-    expect(timeSince(oneDayAgo)).toBe('1 day ago');
-  });
-
-  test('should throw error for invalid dates', () => {
-    expect(() => timeSince('invalid')).toThrow(
-      "Invalid date provided to 'timeSince'. Expected a Date object."
-    );
-  });
-
-  test('should return correct relative time for future dates', () => {
-    const futureDate = new Date(Date.now() + 86400000);
-    expect(timeSince(futureDate)).toBe('in the future');
-  });
-
-  test('should return correct relative time for different time units', () => {
-    const oneMinuteAgo = new Date(Date.now() - 60000);
-    expect(timeSince(oneMinuteAgo)).toBe('1 minute ago');
-
-    const oneHourAgo = new Date(Date.now() - 3600000);
-    expect(timeSince(oneHourAgo)).toBe('1 hour ago');
-
-    const oneWeekAgo = new Date(Date.now() - 7 * 86400000);
-    expect(timeSince(oneWeekAgo)).toBe('7 days ago');
-
-    const oneMonthAgo = new Date(Date.now() - 30 * 86400000);
-    expect(timeSince(oneMonthAgo)).toBe('1 month ago');
-
-    const oneYearAgo = new Date(Date.now() - 365 * 86400000);
-    expect(timeSince(oneYearAgo)).toBe('1 year ago');
-  });
-});
+import {
+  calculateReadingTime,
+  sortFeedsByDate,
+} from '../../src/utils/common.js';
 
 describe('calculateReadingTime', () => {
   const content = 'This is a sample text for testing';
@@ -91,5 +54,74 @@ describe('calculateReadingTime', () => {
     const longContent = 'word '.repeat(1000);
     expect(calculateReadingTime(longContent, 200)).toBe('5 min read');
     expect(calculateReadingTime(longContent, 300)).toBe('4 min read');
+  });
+});
+
+describe('sortFeedsByDate', () => {
+  test('should sort feeds in descending order by pubDate', () => {
+    const feeds = [
+      { pubDate: new Date('2022-01-01') },
+      { pubDate: new Date('2023-01-01') },
+      { pubDate: new Date('2021-01-01') },
+    ];
+
+    const sorted = sortFeedsByDate(feeds);
+
+    expect(sorted).toEqual([
+      { pubDate: new Date('2023-01-01') },
+      { pubDate: new Date('2022-01-01') },
+      { pubDate: new Date('2021-01-01') },
+    ]);
+  });
+
+  test('should ignore null or invalid dates', () => {
+    const feeds = [
+      { pubDate: new Date('2022-01-01') },
+      { pubDate: null },
+      { pubDate: new Date('2021-01-01') },
+      { pubDate: 'invalid-date' },
+    ];
+
+    const sorted = sortFeedsByDate(feeds);
+
+    expect(sorted).toEqual([
+      { pubDate: new Date('2022-01-01') },
+      { pubDate: new Date('2021-01-01') },
+    ]);
+  });
+
+  test('should handle feeds with same pubDate', () => {
+    const feeds = [
+      { pubDate: new Date('2022-01-01') },
+      { pubDate: new Date('2022-01-01') },
+    ];
+
+    const sorted = sortFeedsByDate(feeds);
+
+    expect(sorted).toEqual([
+      { pubDate: new Date('2022-01-01') },
+      { pubDate: new Date('2022-01-01') },
+    ]);
+  });
+
+  test('should handle empty feeds array', () => {
+    const feeds = [];
+    const sorted = sortFeedsByDate(feeds);
+
+    expect(sorted).toEqual([]);
+  });
+
+  test('should handle feeds with future dates', () => {
+    const feeds = [
+      { pubDate: new Date('2045-01-01') },
+      { pubDate: new Date('2023-01-01') },
+    ];
+
+    const sorted = sortFeedsByDate(feeds);
+
+    expect(sorted).toEqual([
+      { pubDate: new Date('2045-01-01') },
+      { pubDate: new Date('2023-01-01') },
+    ]);
   });
 });

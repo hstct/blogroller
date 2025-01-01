@@ -2,7 +2,7 @@ import {
   fetchSubscriptions,
   fetchLatestPost,
   fetchFeedsData,
-} from '../src/api/api.js';
+} from '../src/api.js';
 
 global.fetch = jest.fn();
 

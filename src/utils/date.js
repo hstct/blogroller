@@ -5,7 +5,7 @@
  * @param {Object} [labels] - Custom labels for intervals (e.g., { year: "año", second: "segundo" }).
  * @returns {string} - A string representing the relative time (e.g., "2 days ago").
  */
-export function timeSince(date, labels = {}) {
+function timeSince(date, labels = {}) {
   if (!(date instanceof Date)) {
     throw new Error(
       "Invalid date provided to 'timeSince'. Expected a Date object."
@@ -48,38 +48,17 @@ export function timeSince(date, labels = {}) {
 }
 
 /**
- * Estimates the average reading time of a text based on the word count.
+ * Get the relative date string.
  *
- * @param {string} content - The content to estimate reading time for (e.g., HTML or plain text).
- * @param {number} [wordsPerMinute=250] - The average reading speed in words per minute.
- * @returns {string} - A string representing the estimated reading time (e.g., "3 min read").
+ * @param {string|Date} pubDate - Publication date.
+ * @returns {string} - Relative date string.
  */
-export function calculateReadingTime(content, wordsPerMinute = 250) {
-  if (typeof content !== 'string') {
-    throw new Error(
-      "Invalid content provided to 'calculateReadingTime'. Expected a string."
-    );
+export function getRelativeDate(pubDate) {
+  if (pubDate) {
+    const parsedDate = new Date(pubDate);
+    if (!isNaN(parsedDate.getTime())) {
+      return timeSince(parsedDate);
+    }
   }
-  if (typeof wordsPerMinute !== 'number' || wordsPerMinute <= 0) {
-    throw new Error(
-      "Invalid 'wordsPerMinute' value. Expected a positive number."
-    );
-  }
-
-  // Remove HTML tags and count words
-  const plainText = content
-    .replace(/<\/?[^>]+(>|$)/g, '')
-    .replace(/&[^;]+;/g, ' ');
-  const wordCount = plainText
-    .trim()
-    .split(/\s+/)
-    .filter((word) => word.length > 0).length;
-
-  if (wordCount === 0) {
-    return '0 min read';
-  }
-
-  // Calculate and format reading time
-  const minutes = Math.ceil(wordCount / wordsPerMinute);
-  return `${minutes} min read`;
+  return 'Unknown Date';
 }

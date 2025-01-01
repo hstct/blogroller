@@ -1,65 +1,40 @@
-import { escapeHTML, validateUrl } from './general-utils.js';
-import { timeSince } from './time-utils.js';
+import { getRelativeDate } from './date.js';
 
 /**
- * Sort feeds by publication date in descending order.
+ * Escapes HTML special characters in a string.
  *
- * @param {Array} feeds - Array of feed data objects.
- * @returns {Array} - Sorted feeds data.
+ * @param {string} input - The input string to sanitize.
+ * @returns {string} - A sanitized string safe for embedding in HTML.
  */
-export function sortFeedsByDate(feeds) {
-  return feeds
-    .filter((feed) => {
-      if (!(feed.pubDate instanceof Date) || isNaN(feed.pubDate)) {
-        console.warn(`Invalid pubDate for feed: ${feed}`);
-        return false;
-      }
-      return true;
-    })
-    .sort((a, b) => b.pubDate - a.pubDate);
-}
-
-/**
- * Create a single feed item element.
- *
- * @param {Object} feed - Feed data object.
- * @returns {HTMLElement} - DOM element for the feed item.
- **/
-export function createFeedItem(feed) {
-  const feedTitle = escapeHTML(feed.feedTitle) || 'Untitled Feed';
-  const postTitle = escapeHTML(feed.postTitle) || 'Untitled Post';
-  const relativeDate = getRelativeDate(feed.pubDate);
-  const feedUrl = validateUrl(feed.feedUrl);
-  const postUrl = validateUrl(feed.postUrl);
-
-  const feedItem = document.createElement('div');
-  feedItem.className = 'feed-item';
-
-  const feedHeader = createFeedHeader(feedTitle, feedUrl, feed.feedIcon);
-  const postLink = createPostLink(postTitle, postUrl);
-  const feedMeta = createFeedMeta(feed.readingTime, relativeDate);
-
-  feedItem.appendChild(feedHeader);
-  feedItem.appendChild(postLink);
-  feedItem.appendChild(feedMeta);
-
-  return feedItem;
-}
-
-/**
- * Get the relative date string.
- *
- * @param {string|Date} pubDate - Publication date.
- * @returns {string} - Relative date string.
- */
-function getRelativeDate(pubDate) {
-  if (pubDate) {
-    const parsedDate = new Date(pubDate);
-    if (!isNaN(parsedDate.getTime())) {
-      return timeSince(parsedDate);
-    }
+function escapeHTML(input) {
+  if (typeof input !== 'string') {
+    console.warn(
+      'escapeHTML: Non-string input received. Returning empty string.'
+    );
+    return '';
   }
-  return 'Unknown Date';
+  const div = document.createElement('div');
+  div.textContent = input;
+  return div.innerHTML;
+}
+
+/**
+ * Validates a URL and ensures it uses a safe protocol.
+ *
+ * @param {string} url - The URL to validate.
+ * @param {string} [fallback="#"] - The fallback value for invalid URLs.
+ * @returns {string} - The validated URL or a placeholder.
+ */
+function validateUrl(url, fallback = '#') {
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+      return url;
+    }
+  } catch {
+    console.warn(`validateUrl: Invalid URL provided - ${url}`);
+  }
+  return fallback;
 }
 
 /**
@@ -137,6 +112,33 @@ function createFeedMeta(readingTime, relativeDate) {
   feedMeta.appendChild(postDate);
 
   return feedMeta;
+}
+
+/**
+ * Create a single feed item element.
+ *
+ * @param {Object} feed - Feed data object.
+ * @returns {HTMLElement} - DOM element for the feed item.
+ **/
+export function createFeedItem(feed) {
+  const feedTitle = escapeHTML(feed.feedTitle) || 'Untitled Feed';
+  const postTitle = escapeHTML(feed.postTitle) || 'Untitled Post';
+  const relativeDate = getRelativeDate(feed.pubDate);
+  const feedUrl = validateUrl(feed.feedUrl);
+  const postUrl = validateUrl(feed.postUrl);
+
+  const feedItem = document.createElement('div');
+  feedItem.className = 'feed-item';
+
+  const feedHeader = createFeedHeader(feedTitle, feedUrl, feed.feedIcon);
+  const postLink = createPostLink(postTitle, postUrl);
+  const feedMeta = createFeedMeta(feed.readingTime, relativeDate);
+
+  feedItem.appendChild(feedHeader);
+  feedItem.appendChild(postLink);
+  feedItem.appendChild(feedMeta);
+
+  return feedItem;
 }
 
 /**
