@@ -3,19 +3,24 @@
  *
  * @param {Date} date - The date to calculate the elapsed time from.
  * @param {Object} [labels] - Custom labels for intervals (e.g., { year: "año", second: "segundo" }).
+ * @param {number} [threshold=5] - Number of seconds under which to return "just now".
  * @returns {string} - A string representing the relative time (e.g., "2 days ago").
  */
-function timeSince(date, labels = {}) {
+function timeSince(date, labels = {}, threshold = 5) {
   if (!(date instanceof Date)) {
     throw new Error(
       "Invalid date provided to 'timeSince'. Expected a Date object."
     );
   }
 
-  const seconds = Math.floor((new Date() - date) / 1000);
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
 
   if (seconds < 0) {
     return 'in the future';
+  }
+
+  if (seconds < threshold) {
+    return 'just now';
   }
 
   const defaultLabels = {
@@ -41,7 +46,8 @@ function timeSince(date, labels = {}) {
   for (const interval of intervals) {
     const count = Math.floor(seconds / interval.seconds);
     if (count >= 1) {
-      return `${count} ${finalLabels[interval.label] || interval.label}${count > 1 ? 's' : ''} ago`;
+      const label = finalLabels[interval.label] || interval.label;
+      return `${count} ${label}${count > 1 ? 's' : ''} ago`;
     }
   }
   return 'just now';
@@ -51,13 +57,15 @@ function timeSince(date, labels = {}) {
  * Get the relative date string.
  *
  * @param {string|Date} pubDate - Publication date.
+ * @param {Object} [labels] - Custom labels for intervals (optional).
+ * @param {number} [threshold=5] - Seconds threshold for returning "just now".
  * @returns {string} - Relative date string.
  */
-export function getRelativeDate(pubDate) {
+export function getRelativeDate(pubDate, labels = {}, threshold = 5) {
   if (pubDate) {
     const parsedDate = new Date(pubDate);
     if (!isNaN(parsedDate.getTime())) {
-      return timeSince(parsedDate);
+      return timeSince(parsedDate, labels, threshold);
     }
   }
   return 'Unknown Date';
