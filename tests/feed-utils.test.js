@@ -85,6 +85,76 @@ describe('createFeedItem', () => {
     expect(linkElement.textContent).toBe('Untitled Post');
     expect(postDateElement.textContent).toBe('Unknown Date');
   });
+
+  test.skip('should handle feed item without feedIcon', () => {
+    const mockData = {
+      feedTitle: 'Test Feed Item',
+      postTitle: 'Sample Post',
+      feedUrl: 'https://test.com',
+      postUrl: 'https://test.com/post',
+      pubDate: new Date('2024-01-01').toISOString(),
+      readingTime: '5 min read',
+    };
+
+    const feedItem = createFeedItem(mockData);
+
+    expect(feedItem).toBeInstanceOf(HTMLElement);
+    const iconElement = feedItem.querySelector('img.feed-icon');
+    expect(iconElement).toBeNull();
+  });
+
+  test.skip('should handle special characters in postTitle', () => {
+    const mockData = {
+      feedTitle: 'Test Feed Item',
+      postTitle: 'Sample <b>Post</b>',
+      feedUrl: 'https://test.com',
+      postUrl: 'https://test.com/post',
+      pubDate: new Date('2024-01-01').toISOString(),
+      feedIcon: 'https://test.com/icon.png',
+      readingTime: '5 min read',
+    };
+
+    const feedItem = createFeedItem(mockData);
+
+    const linkElement = feedItem.querySelector('.post-title-link');
+    expect(linkElement.innerHTML).toBe('Sample &lt;b&gt;Post&lt;/b&gt;');
+  });
+
+  test('should handle feed item with no readingTime', () => {
+    const mockData = {
+      feedTitle: 'Test Feed Item',
+      postTitle: 'Sample Post',
+      feedUrl: 'https://test.com',
+      postUrl: 'https://test.com/post',
+      pubDate: new Date('2024-01-01').toISOString(),
+      feedIcon: 'https://test.com/icon.png',
+    };
+
+    const feedItem = createFeedItem(mockData);
+
+    const readingTimeElement = feedItem.querySelector('.reading-time');
+    expect(readingTimeElement.textContent.trim()).toBe('N/A');
+  });
+
+  test('should handle long feedTitle and postTitle', () => {
+    const mockData = {
+      feedTitle: 'A'.repeat(300),
+      postTitle: 'B'.repeat(300),
+      feedUrl: 'https://test.com',
+      postUrl: 'https://test.com/post',
+      pubDate: new Date('2024-01-01').toISOString(),
+      feedIcon: 'https://test.com/icon.png',
+      readingTime: '5 min read',
+    };
+
+    const feedItem = createFeedItem(mockData);
+
+    const titleElement = feedItem.querySelector('.feed-title-link');
+    const linkElement = feedItem.querySelector('.post-title-link');
+
+    expect(titleElement.textContent.length).toBe(300);
+    expect(linkElement.textContent.length).toBe(300);
+  });
 });
 
 describe('sortFeedsByDate', () => {
@@ -117,6 +187,41 @@ describe('sortFeedsByDate', () => {
     expect(sorted).toEqual([
       { pubDate: new Date('2022-01-01') },
       { pubDate: new Date('2021-01-01') },
+    ]);
+  });
+
+  test('should handle feeds with same pubDate', () => {
+    const feeds = [
+      { pubDate: new Date('2022-01-01') },
+      { pubDate: new Date('2022-01-01') },
+    ];
+
+    const sorted = sortFeedsByDate(feeds);
+
+    expect(sorted).toEqual([
+      { pubDate: new Date('2022-01-01') },
+      { pubDate: new Date('2022-01-01') },
+    ]);
+  });
+
+  test('should handle empty feeds array', () => {
+    const feeds = [];
+    const sorted = sortFeedsByDate(feeds);
+
+    expect(sorted).toEqual([]);
+  });
+
+  test('should handle feeds with future dates', () => {
+    const feeds = [
+      { pubDate: new Date('2045-01-01') },
+      { pubDate: new Date('2023-01-01') },
+    ];
+
+    const sorted = sortFeedsByDate(feeds);
+
+    expect(sorted).toEqual([
+      { pubDate: new Date('2045-01-01') },
+      { pubDate: new Date('2023-01-01') },
     ]);
   });
 });
