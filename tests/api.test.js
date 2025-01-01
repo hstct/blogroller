@@ -63,7 +63,7 @@ describe('API Tests', () => {
 
     test('should throw an error for invalid subscriptionUrl', async () => {
       await expect(fetchSubscriptions({}, 'favs')).rejects.toThrow(
-        "Both 'subscriptionUrl' and 'categoryLabel' are required"
+        '[Blogroll] Missing required parameter(s) for fetchSubscriptions: subscriptionUrl'
       );
     });
 
@@ -79,7 +79,7 @@ describe('API Tests', () => {
       await expect(
         fetchSubscriptions({ subscriptionUrl: 'https://test-url' }, '')
       ).rejects.toThrow(
-        "Both 'subscriptionUrl' and 'categoryLabel' are required"
+        '[Blogroll] Missing required parameter(s) for fetchSubscriptions: categoryLabel'
       );
     });
   });
@@ -104,7 +104,7 @@ describe('API Tests', () => {
 
     test('should throw an error for invalid feedBaseUrl', async () => {
       await expect(fetchLatestPost('feed123', {})).rejects.toThrow(
-        "Both 'feedId' and 'feedBaseUrl' are required."
+        '[Blogroll] Missing required parameter(s) for fetchLatestPost: feedBaseUrl'
       );
     });
 
@@ -119,7 +119,9 @@ describe('API Tests', () => {
     test('should throw error for empty feed ID', async () => {
       await expect(
         fetchLatestPost('', { feedBaseUrl: 'https://test-url/' })
-      ).rejects.toThrow("Both 'feedId' and 'feedBaseUrl' are required.");
+      ).rejects.toThrow(
+        '[Blogroll] Missing required parameter(s) for fetchLatestPost: feedId'
+      );
     });
 
     test('should handle feed with no posts', async () => {
@@ -186,7 +188,8 @@ describe('API Tests', () => {
         expect.objectContaining({
           id: 'feed2',
           title: 'Feed 2',
-          error: 'Failed to fetch latest post for feed ID: feed2: Not Found',
+          error:
+            '[Blogroll] Failed to fetch latest post for feed ID: feed2: Not Found',
         })
       );
     });
@@ -232,7 +235,8 @@ describe('API Tests', () => {
         expect.objectContaining({
           id: 'feed3',
           title: 'Feed 3',
-          error: 'Failed to fetch latest post for feed ID: feed3: Not Found',
+          error:
+            '[Blogroll] Failed to fetch latest post for feed ID: feed3: Not Found',
         })
       );
     });
@@ -303,7 +307,8 @@ describe('Edge Cases', () => {
       expect.objectContaining({
         id: 'feed3',
         title: 'Feed 3',
-        error: 'Failed to fetch latest post for feed ID: feed3: Not Found',
+        error:
+          '[Blogroll] Failed to fetch latest post for feed ID: feed3: Not Found',
       })
     );
   });

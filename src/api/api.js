@@ -1,20 +1,6 @@
+import { MESSAGES } from '../constants.js';
 import { calculateReadingTime } from '../utils/time-utils.js';
-
-/**
- * Utility function to handle fetch responses.
- *
- * @param {Response} response - Fetch API response object.
- * @param {string} errorMessage - Custom error message for failed response.
- * @returns {Promise<any>} - Parsed JSON data from the response.
- */
-async function handleFetchResponse(response, errorMessage) {
-  if (!response.ok) {
-    throw new Error(
-      `${errorMessage}: ${response.statusText || 'Unknown Error'}`
-    );
-  }
-  return response.json();
-}
+import { customFetch } from '../utils/wrappers.js';
 
 /**
  * Fetch subscription feeds filtered by a specific category label.
@@ -25,18 +11,24 @@ async function handleFetchResponse(response, errorMessage) {
  * @returns {Promise<Array>} - A promise that resolves to an array of subscription feeds.
  */
 export async function fetchSubscriptions({ subscriptionUrl }, categoryLabel) {
-  if (!subscriptionUrl || !categoryLabel) {
-    throw new Error("Both 'subscriptionUrl' and 'categoryLabel' are required");
+  let missingParams = [];
+  if (!subscriptionUrl) missingParams.push('subscriptionUrl');
+  if (!categoryLabel) missingParams.push('categoryLabel');
+
+  if (missingParams.length > 0) {
+    throw new Error(
+      MESSAGES.ERROR.MISSING_PARAMETER_DETAIL(
+        missingParams.join(', '),
+        'fetchSubscriptions'
+      )
+    );
   }
 
-  const response = await fetch(subscriptionUrl, {
-    referrerPolicy: 'strict-origin-when-cross-origin',
-  });
-
-  const data = await handleFetchResponse(
-    response,
+  const data = await customFetch(
+    subscriptionUrl,
     'Failed to fetch subscriptions'
   );
+
   return data.subscriptions.filter((feed) =>
     feed.categories.some((category) => category.label === categoryLabel)
   );
@@ -51,22 +43,28 @@ export async function fetchSubscriptions({ subscriptionUrl }, categoryLabel) {
  * @return {Promise<Object|null>} - A promise that resolves to the latest post data or null.
  */
 export async function fetchLatestPost(feedId, { feedBaseUrl }) {
-  if (!feedId || !feedBaseUrl) {
-    throw new Error("Both 'feedId' and 'feedBaseUrl' are required.");
+  let missingParams = [];
+  if (!feedId) missingParams.push('feedId');
+  if (!feedBaseUrl) missingParams.push('feedBaseUrl');
+
+  if (missingParams.length > 0) {
+    throw new Error(
+      MESSAGES.ERROR.MISSING_PARAMETER_DETAIL(
+        missingParams.join(', '),
+        'fetchLatestPost'
+      )
+    );
   }
 
   const feedUrl = `${feedBaseUrl}${encodeURIComponent(feedId)}?n=1`;
-  const response = await fetch(feedUrl, {
-    referrerPolicy: 'strict-origin-when-cross-origin',
-  });
 
-  const feedData = await handleFetchResponse(
-    response,
+  const feedData = await customFetch(
+    feedUrl,
     `Failed to fetch latest post for feed ID: ${feedId}`
   );
 
   if (!feedData.items || !feedData.items[0]) {
-    console.warn(`No posts found for feed ID: ${feedId}`);
+    console.warn(MESSAGES.WARN.NO_POSTS_FOR_ID(feedId));
     return null;
   }
 
@@ -74,7 +72,7 @@ export async function fetchLatestPost(feedId, { feedBaseUrl }) {
   const pubDate = new Date(latestPost.published * 1000);
 
   if (isNaN(pubDate.getTime())) {
-    console.warn(`Invalid publish date for feed ID: ${feedId}`);
+    console.warn(MESSAGES.WARN.INVALID_DATE_FOR_ID(feedId));
     return null;
   }
 
@@ -116,7 +114,7 @@ export async function fetchFeedsData(feeds, config) {
           ...latestPost,
         };
       } catch (error) {
-        console.error(`Error fetching data for feed:`, error);
+        console.error(MESSAGES.ERROR.FETCH_FAILED, error);
         failedFeeds.push({
           id: feed.id,
           title: feed.title,
