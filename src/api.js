@@ -30,7 +30,7 @@ async function customFetch(
  * @param {string} categoryLabel - The category label to filter subscriptions by.
  * @returns {Promise<Array>} - A promise that resolves to an array of subscription feeds.
  */
-export async function fetchSubscriptions({ subscriptionUrl }, categoryLabel) {
+export async function fetchSubscriptions({ subscriptionUrl, categoryLabel }) {
   let missingParams = [];
   if (!subscriptionUrl) missingParams.push('subscriptionUrl');
   if (!categoryLabel) missingParams.push('categoryLabel');

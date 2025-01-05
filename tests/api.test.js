@@ -48,10 +48,10 @@ describe('API Tests', () => {
     test('should fetch and filter subscriptions by category', async () => {
       mockFetch(mockResponses.validSubscriptions);
 
-      const result = await fetchSubscriptions(
-        { subscriptionUrl: 'https://test-url' },
-        'favs'
-      );
+      const result = await fetchSubscriptions({
+        subscriptionUrl: 'https://test-url',
+        categoryLabel: 'favs',
+      });
       expect(result).toEqual([
         { categories: [{ label: 'favs' }], title: 'Feed 1' },
       ]);
@@ -70,13 +70,19 @@ describe('API Tests', () => {
       mockFetch(null, false, 'Internal Server Error');
 
       await expect(
-        fetchSubscriptions({ subscriptionUrl: 'https://test-url' }, 'favs')
+        fetchSubscriptions({
+          subscriptionUrl: 'https://test-url',
+          categoryLabel: 'favs',
+        })
       ).rejects.toThrow('Failed to fetch subscriptions: Internal Server Error');
     });
 
     test('should throw error for empty category label', async () => {
       await expect(
-        fetchSubscriptions({ subscriptionUrl: 'https://test-url' }, '')
+        fetchSubscriptions({
+          subscriptionUrl: 'https://test-url',
+          categoryLabel: '',
+        })
       ).rejects.toThrow(
         '[Blogroll] Missing required parameter(s) for fetchSubscriptions: categoryLabel'
       );
@@ -269,10 +275,10 @@ describe('Edge Cases', () => {
   test('fetchSubscriptions should handle no feeds', async () => {
     mockFetch({ subscriptions: [] }); // Empty subscription
 
-    const result = await fetchSubscriptions(
-      { subscriptionUrl: 'https://test-url' },
-      'favs'
-    );
+    const result = await fetchSubscriptions({
+      subscriptionUrl: 'https://test-url',
+      categoryLabel: 'favs',
+    });
     expect(result).toEqual([]);
   });
 
