@@ -59,13 +59,13 @@ export async function fetchSubscriptions({ subscriptionUrl }, categoryLabel) {
  *
  * @param {string} feedId - The ID of the feed.
  * @param {Object} config - The configuration object.
- * @param {string} config.feedUrl - Base URL for fetching feed content.
+ * @param {string} config.proxUrl - Base URL for fetching feed content.
  * @return {Promise<Object|null>} - A promise that resolves to the latest post data or null.
  */
-export async function fetchLatestPost(feedId, { feedBaseUrl }) {
+export async function fetchLatestPost(feedId, { proxyUrl }) {
   let missingParams = [];
   if (!feedId) missingParams.push('feedId');
-  if (!feedBaseUrl) missingParams.push('feedBaseUrl');
+  if (!proxyUrl) missingParams.push('proxyUrl');
 
   if (missingParams.length > 0) {
     throw new Error(
@@ -76,7 +76,7 @@ export async function fetchLatestPost(feedId, { feedBaseUrl }) {
     );
   }
 
-  const feedUrl = `${feedBaseUrl}${encodeURIComponent(feedId)}?n=1`;
+  const feedUrl = `${proxyUrl}${feedId}?n=1`;
 
   const feedData = await customFetch(
     feedUrl,

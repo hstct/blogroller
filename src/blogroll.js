@@ -34,10 +34,6 @@ export class Blogroll {
       this.config.subscriptionEndpoint,
       { output: 'json' }
     );
-    this.config.feedBaseUrl = constructApiUrl(
-      this.config.proxyUrl,
-      this.config.feedEndpoint
-    );
 
     this.loadFeeds();
   }

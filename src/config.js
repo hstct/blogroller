@@ -1,8 +1,7 @@
 export const CONFIG = {
   defaults: {
     documentClass: 'blogroll',
-    subscriptionEndpoint: 'subscription/list',
-    feedEndpoint: 'stream/contents',
+    subscriptionEndpoint: 'subscriptions',
     batchSize: 10,
   },
   validation: {

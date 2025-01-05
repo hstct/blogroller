@@ -87,8 +87,8 @@ describe('API Tests', () => {
     test('should fetch the latest post for a valid feed ID', async () => {
       mockFetch(mockResponses.validPost);
 
-      const result = await fetchLatestPost('feed123', {
-        feedBaseUrl: 'https://test-url/',
+      const result = await fetchLatestPost('feed/123', {
+        proxyUrl: 'https://test-url/',
       });
       expect(result).toEqual({
         postTitle: 'Post Title',
@@ -96,14 +96,14 @@ describe('API Tests', () => {
         pubDate: new Date(1672444800000),
         readingTime: '1 min read',
       });
-      expect(fetch).toHaveBeenCalledWith('https://test-url/feed123?n=1', {
+      expect(fetch).toHaveBeenCalledWith('https://test-url/feed/123?n=1', {
         referrerPolicy: 'strict-origin-when-cross-origin',
       });
     });
 
     test('should throw an error for invalid feedBaseUrl', async () => {
-      await expect(fetchLatestPost('feed123', {})).rejects.toThrow(
-        '[Blogroll] Missing required parameter(s) for fetchLatestPost: feedBaseUrl'
+      await expect(fetchLatestPost('feed/123', {})).rejects.toThrow(
+        '[Blogroll] Missing required parameter(s) for fetchLatestPost: proxyUrl'
       );
     });
 
@@ -111,13 +111,13 @@ describe('API Tests', () => {
       mockFetch(null, false, 'Not Found');
 
       await expect(
-        fetchLatestPost('feed123', { feedBaseUrl: 'https://test-url/' })
-      ).rejects.toThrow('Failed to fetch latest post for feed ID: feed123');
+        fetchLatestPost('feed/123', { proxyUrl: 'https://test-url/' })
+      ).rejects.toThrow('Failed to fetch latest post for feed ID: feed/123');
     });
 
     test('should throw error for empty feed ID', async () => {
       await expect(
-        fetchLatestPost('', { feedBaseUrl: 'https://test-url/' })
+        fetchLatestPost('', { proxyUrl: 'https://test-url/' })
       ).rejects.toThrow(
         '[Blogroll] Missing required parameter(s) for fetchLatestPost: feedId'
       );
@@ -126,8 +126,8 @@ describe('API Tests', () => {
     test('should handle feed with no posts', async () => {
       mockFetch(mockResponses.emptyPost);
 
-      const result = await fetchLatestPost('feed123', {
-        feedBaseUrl: 'https://test-url/',
+      const result = await fetchLatestPost('feed/123', {
+        proxyUrl: 'https://test-url/',
       });
       expect(result).toBeNull();
     });
@@ -135,8 +135,8 @@ describe('API Tests', () => {
     test('should handle feed with invalid post data', async () => {
       mockFetch({ items: [{ invalid: 'data' }] });
 
-      const result = await fetchLatestPost('feed123', {
-        feedBaseUrl: 'https://test-url/',
+      const result = await fetchLatestPost('feed/123', {
+        proxyUrl: 'https://test-url/',
       });
       expect(result).toBeNull();
     });
@@ -163,7 +163,7 @@ describe('API Tests', () => {
       mockFetch(mockResponses.validPost);
 
       const result = await fetchFeedsData(feeds, {
-        feedBaseUrl: 'https://test-url/',
+        proxyUrl: 'https://test-url/',
       });
 
       expect(result.feedsData).toHaveLength(2);
@@ -181,7 +181,7 @@ describe('API Tests', () => {
       mockFetch(null, false, 'Not Found');
 
       const result = await fetchFeedsData(feeds, {
-        feedBaseUrl: 'https://test-url/',
+        proxyUrl: 'https://test-url/',
       });
 
       expect(result.feedsData).toHaveLength(1);
@@ -206,7 +206,7 @@ describe('API Tests', () => {
 
     test('should handle an empty feeds array', async () => {
       const result = await fetchFeedsData([], {
-        feedBaseUrl: 'https://test-url/',
+        proxyUrl: 'https://test-url/',
       });
 
       expect(result.feedsData).toHaveLength(0);
@@ -232,7 +232,7 @@ describe('API Tests', () => {
       ];
 
       const result = await fetchFeedsData(mixedFeeds, {
-        feedBaseUrl: 'https://test-url/',
+        proxyUrl: 'https://test-url/',
       });
 
       expect(result.feedsData).toHaveLength(1);
@@ -279,8 +279,8 @@ describe('Edge Cases', () => {
   test('fetchLatestPost should handle missing data gracefully', async () => {
     mockFetch({ items: [{}] }); // Missing expected fields
 
-    const result = await fetchLatestPost('feed123', {
-      feedBaseUrl: 'https://test-url/',
+    const result = await fetchLatestPost('feed/123', {
+      proxyUrl: 'https://test-url/',
     });
     expect(result).toBeNull();
   });
@@ -315,7 +315,7 @@ describe('Edge Cases', () => {
     ];
 
     const result = await fetchFeedsData(feeds, {
-      feedBaseUrl: 'https://test-url/',
+      proxyUrl: 'https://test-url/',
     });
 
     expect(result.feedsData).toHaveLength(1);
