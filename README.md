@@ -10,6 +10,7 @@ A lightweight JavaScript library for fetching and displaying RSS feeds from a Fr
 ---
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [Installation](#installation)
 3. [Usage](#usage)
@@ -23,9 +24,11 @@ A lightweight JavaScript library for fetching and displaying RSS feeds from a Fr
 ---
 
 ## Overview
+
 **Blogroller** helps you display a list of the latest posts from multiple RSS feeds. You can fetch them through a **proxy** (to hide credentials and unify requests) and show them in a neat, paginated list with reading-time estimates and relative "published X days ago" labels.
 
 **Features**:
+
 - Automatic reading time calculation based on word count
 - Relative "time ago" stamps (e.g., "2 days ago")
 - Batch-based pagination with a "Show More" link
@@ -58,7 +61,7 @@ You can also load **Blogroller** from a CDN like **jsDelivr**:
   const blogroll = new Blogroller.Blogroll();
   blogroll.initialize({
     proxyUrl: 'https://your-proxy-url/',
-    categoryLabel: 'myCategory'
+    categoryLabel: 'myCategory',
   });
 </script>
 ```
@@ -81,7 +84,7 @@ blogroll.initialize({
   proxyUrl: 'https://example-proxy.com/',
   categoryLabel: 'myCategory',
   batchSize: 5,
-  containerId: 'rss-feed'
+  containerId: 'rss-feed',
 });
 ```
 
@@ -98,7 +101,7 @@ blogroll.initialize({
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Blogroller Example</title>
   </head>
   <body>
@@ -112,7 +115,7 @@ blogroll.initialize({
         proxyUrl: 'https://example.com/my-proxy/',
         categoryLabel: 'favorites',
         batchSize: 5,
-        containerId: 'rss-feed'
+        containerId: 'rss-feed',
       });
     </script>
   </body>
@@ -132,6 +135,7 @@ blogroll.initialize({
   categoryLabel: 'myCategory',
 });
 ```
+
 ---
 
 ## Configuration & API
@@ -139,13 +143,13 @@ blogroll.initialize({
 `Blogroll` class provides:
 
 - `initialize(config)`
-    - `proxyUrl` *(string, required)*: The base URL to your FreshRSS proxy.
-    - `categoryLabel` *(string, required)*: The feed category label for filter subscriptions.
-    - `containerId` *(string, default `"rss-feed"`)*: The DOM element ID to render the blogroll.
-    - `batchSize` *(number, defaul `10`)*: How many items to display per batch.
-    - `subscriptionEndpoint` *(string, default `"subscription/list"`)*: Proxy endpoint to fetch subscription feeds.
-    - `feedEndpoin` *(string, default `"stream/contents"`)*: Proxy endpoint to fetch feed contents.
-- `loadFeeds()` *(async)*: Manually fetches feeds and displays them. It's automatically called by `initialize()`, but you can re-trigger it if needed.
+  - `proxyUrl` _(string, required)_: The base URL to your FreshRSS proxy.
+  - `categoryLabel` _(string, required)_: The feed category label for filter subscriptions.
+  - `containerId` _(string, default `"rss-feed"`)_: The DOM element ID to render the blogroll.
+  - `batchSize` _(number, defaul `10`)_: How many items to display per batch.
+  - `subscriptionEndpoint` _(string, default `"subscription/list"`)_: Proxy endpoint to fetch subscription feeds.
+  - `feedEndpoin` _(string, default `"stream/contents"`)_: Proxy endpoint to fetch feed contents.
+- `loadFeeds()` _(async)_: Manually fetches feeds and displays them. It's automatically called by `initialize()`, but you can re-trigger it if needed.
 - `displayFeeds(feeds)` Renders the given array of feed data. Typically only called internally, but you can override or extend for custom logic.
 
 **Error Handling**
