@@ -1,6 +1,6 @@
 {
   "name": "blogroller",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A blogroll-like library for fetching & rendering feed data from a FreshRSS instance.",
   "main": "dist/blogroller.umd.js",
   "module": "dist/blogroller.esm.js",
