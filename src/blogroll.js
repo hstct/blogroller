@@ -79,6 +79,10 @@ export class Blogroll {
       throw new Error(MESSAGES.ERROR.MISSING_CONTAINER(containerId));
     }
 
+    if (!container.classList.contains('blogroller-feed-container')) {
+      container.classList.add('blogroller-feed-container');
+    }
+
     return container;
   }
 
