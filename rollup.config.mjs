@@ -1,6 +1,7 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
 import { terser } from 'rollup-plugin-terser';
+import commonjs from '@rollup/plugin-commonjs';
+import postcss from 'rollup-plugin-postcss';
 
 export default {
   input: 'src/blogroll.js',
@@ -19,5 +20,12 @@ export default {
       plugins: [terser()],
     },
   ],
-  plugins: [nodeResolve(), commonjs()],
+  plugins: [
+    nodeResolve(),
+    commonjs(),
+    postcss({
+      extract: 'blogroller.css',
+      minimize: true,
+    }),
+  ],
 };

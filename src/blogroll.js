@@ -3,6 +3,7 @@ import { createFeedItem, createShowMoreLink } from './utils/dom.js';
 import { constructApiUrl, sortFeedsByDate } from './utils/common.js';
 import { CONFIG } from './config.js';
 import { DEFAULT_CONTAINER_ID, MESSAGES } from './constants.js';
+import '../styles/blogroller.css';
 
 /**
  * Class to handle Blogroll functionality.
@@ -137,7 +138,9 @@ export class Blogroll {
       event.preventDefault();
 
       const feedContainer = this.getFeedContainer();
-      const currentCount = feedContainer.querySelectorAll('.feed-item').length;
+      const currentCount = feedContainer.querySelectorAll(
+        '.blogroller-feed-item'
+      ).length;
       this.renderFeeds(feeds, currentCount);
 
       if (currentCount + this.config.batchSize >= feeds.length) {

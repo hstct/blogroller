@@ -47,17 +47,17 @@ function validateUrl(url, fallback = '#') {
  */
 function createFeedHeader(feedTitle, feedUrl, feedIconUrl) {
   const feedHeader = document.createElement('div');
-  feedHeader.className = 'feed-header';
+  feedHeader.className = 'blogroller-feed-header';
 
   const feedLink = document.createElement('a');
   feedLink.href = feedUrl || '#';
   feedLink.target = '_blank';
-  feedLink.className = 'feed-title-link';
+  feedLink.className = 'blogroller-feed-title-link';
 
   const feedIcon = document.createElement('img');
   feedIcon.src = feedIconUrl || '';
   feedIcon.alt = `${feedTitle} icon`;
-  feedIcon.className = 'feed-icon';
+  feedIcon.className = 'blogroller-feed-icon';
   feedIcon.setAttribute('referrerpolicy', 'no-referrer');
 
   feedLink.appendChild(feedIcon);
@@ -78,7 +78,7 @@ function createPostLink(postTitle, postUrl) {
   const postLink = document.createElement('a');
   postLink.href = postUrl || '#';
   postLink.target = '_blank';
-  postLink.className = 'post-title-link';
+  postLink.className = 'blogroller-post-title-link';
   postLink.textContent = postTitle;
 
   return postLink;
@@ -93,18 +93,18 @@ function createPostLink(postTitle, postUrl) {
  */
 function createFeedMeta(readingTime, relativeDate) {
   const feedMeta = document.createElement('div');
-  feedMeta.className = 'feed-meta';
+  feedMeta.className = 'blogroller-feed-meta';
 
   const readingTimeSpan = document.createElement('span');
-  readingTimeSpan.className = 'reading-time';
+  readingTimeSpan.className = 'blogroller-reading-time';
   readingTimeSpan.textContent = readingTime || 'N/A';
 
   const separator = document.createElement('span');
-  separator.className = 'separator';
+  separator.className = 'blogroller-separator';
   separator.textContent = '•';
 
   const postDate = document.createElement('span');
-  postDate.className = 'post-date';
+  postDate.className = 'blogroller-post-date';
   postDate.textContent = relativeDate;
 
   feedMeta.appendChild(readingTimeSpan);
@@ -128,7 +128,7 @@ export function createFeedItem(feed) {
   const postUrl = validateUrl(feed.postUrl);
 
   const feedItem = document.createElement('div');
-  feedItem.className = 'feed-item';
+  feedItem.className = 'blogroller-feed-item';
 
   const feedHeader = createFeedHeader(feedTitle, feedUrl, feed.feedIcon);
   const postLink = createPostLink(postTitle, postUrl);
@@ -148,7 +148,7 @@ export function createFeedItem(feed) {
  **/
 export function createShowMoreLink() {
   const showMoreLink = document.createElement('a');
-  showMoreLink.id = 'show-more';
+  showMoreLink.id = 'blogroller-show-more';
   showMoreLink.href = '#';
   showMoreLink.textContent = 'Show More';
   showMoreLink.style.display = 'none'; // Initially hidden

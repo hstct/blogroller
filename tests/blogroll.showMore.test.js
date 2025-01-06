@@ -70,7 +70,7 @@ describe('Blogroll Show More Tests', () => {
   test('should NOT show "Show More" link if total feeds <= batchSize', async () => {
     await Promise.resolve();
 
-    const showMoreLink = document.getElementById('show-more');
+    const showMoreLink = document.getElementById('blogroller-show-more');
     expect(showMoreLink).toBeNull();
   });
 
@@ -131,11 +131,11 @@ describe('Blogroll Show More Tests', () => {
     await blogroll.loadFeeds();
 
     // We should now have 2 items rendered (batchSize = 2)
-    let feedItems = container.querySelectorAll('.feed-item');
+    let feedItems = container.querySelectorAll('.blogroller-feed-item');
     expect(feedItems.length).toBe(2);
 
     // The "Show More" link should be visible
-    const showMoreLink = document.getElementById('show-more');
+    const showMoreLink = document.getElementById('blogroller-show-more');
     expect(showMoreLink).not.toBeNull();
     expect(showMoreLink.style.display).toBe('block');
 
@@ -143,12 +143,12 @@ describe('Blogroll Show More Tests', () => {
     showMoreLink.click();
 
     // Now we expect 4 items (the next 2 in the list)
-    feedItems = container.querySelectorAll('.feed-item');
+    feedItems = container.querySelectorAll('.blogroller-feed-item');
     expect(feedItems.length).toBe(4);
 
     // Click again → we should get the final 5th item
     showMoreLink.click();
-    feedItems = container.querySelectorAll('.feed-item');
+    feedItems = container.querySelectorAll('.blogroller-feed-item');
     expect(feedItems.length).toBe(5);
 
     // After the last click, there are no more items left to show, so it should hide

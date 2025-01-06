@@ -18,8 +18,8 @@ describe('createFeedItem', () => {
     expect(feedItem).toBeInstanceOf(HTMLElement);
 
     // Validate structure
-    const titleElement = feedItem.querySelector('.feed-title-link');
-    const linkElement = feedItem.querySelector('.post-title-link');
+    const titleElement = feedItem.querySelector('.blogroller-feed-title-link');
+    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
 
     expect(titleElement).not.toBeNull();
     expect(titleElement.textContent.trim()).toBe(mockData.feedTitle);
@@ -39,14 +39,14 @@ describe('createFeedItem', () => {
     const feedItem = createFeedItem(mockData);
 
     // Ensure the title is sanitized
-    const titleElement = feedItem.querySelector('.feed-title-link');
+    const titleElement = feedItem.querySelector('.blogroller-feed-title-link');
     expect(titleElement.innerHTML).not.toContain('<script>');
     expect(titleElement.textContent).toBe(
       '&lt;script&gt;alert("XSS")&lt;/script&gt;'
     );
 
     // Ensure the link is sanitized or omitted
-    const linkElement = feedItem.querySelector('.post-title-link');
+    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
     expect(linkElement.href).not.toContain('javascript');
   });
 
@@ -64,7 +64,7 @@ describe('createFeedItem', () => {
     const feedItem = createFeedItem(mockData);
 
     expect(feedItem).toBeInstanceOf(HTMLElement);
-    const metaElement = feedItem.querySelector('.post-date');
+    const metaElement = feedItem.querySelector('.blogroller-post-date');
     expect(metaElement.textContent.trim()).toBe('Unknown Date');
   });
 
@@ -77,9 +77,9 @@ describe('createFeedItem', () => {
     expect(feedItem).toBeInstanceOf(HTMLElement);
 
     // Ensure the content is default or empty
-    const titleElement = feedItem.querySelector('.feed-title-link');
-    const linkElement = feedItem.querySelector('.post-title-link');
-    const postDateElement = feedItem.querySelector('.post-date');
+    const titleElement = feedItem.querySelector('.blogroller-feed-title-link');
+    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
+    const postDateElement = feedItem.querySelector('.blogroller-post-date');
 
     expect(titleElement.textContent).toBe('Untitled Feed');
     expect(linkElement.textContent).toBe('Untitled Post');
@@ -99,7 +99,7 @@ describe('createFeedItem', () => {
     const feedItem = createFeedItem(mockData);
 
     expect(feedItem).toBeInstanceOf(HTMLElement);
-    const iconElement = feedItem.querySelector('img.feed-icon');
+    const iconElement = feedItem.querySelector('img.blogroller-feed-icon');
     expect(iconElement).toBeNull();
   });
 
@@ -116,7 +116,7 @@ describe('createFeedItem', () => {
 
     const feedItem = createFeedItem(mockData);
 
-    const linkElement = feedItem.querySelector('.post-title-link');
+    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
     expect(linkElement.innerHTML).toBe('Sample &lt;b&gt;Post&lt;/b&gt;');
   });
 
@@ -132,7 +132,9 @@ describe('createFeedItem', () => {
 
     const feedItem = createFeedItem(mockData);
 
-    const readingTimeElement = feedItem.querySelector('.reading-time');
+    const readingTimeElement = feedItem.querySelector(
+      '.blogroller-reading-time'
+    );
     expect(readingTimeElement.textContent.trim()).toBe('N/A');
   });
 
@@ -149,8 +151,8 @@ describe('createFeedItem', () => {
 
     const feedItem = createFeedItem(mockData);
 
-    const titleElement = feedItem.querySelector('.feed-title-link');
-    const linkElement = feedItem.querySelector('.post-title-link');
+    const titleElement = feedItem.querySelector('.blogroller-feed-title-link');
+    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
 
     expect(titleElement.textContent.length).toBe(300);
     expect(linkElement.textContent.length).toBe(300);
