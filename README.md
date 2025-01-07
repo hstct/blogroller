@@ -38,10 +38,10 @@ import { Blogroll } from 'blogroller';
 You can also load **Blogroller** from a CDN like unpkg:
 ```html
 <!-- Include Blogroller CSS -->
-<link rel="stylesheet" href="https://unpkg.com/blogroller@1.1.0/dist/blogroller.css" />
+<link rel="stylesheet" href="https://unpkg.com/blogroller@latest/dist/blogroller.css" />
 
 <!-- Include Blogroller JS -->
-<script src="https://unpkg.com/blogroller@1.1.0/dist/blogroller.umd.js"></script>
+<script src="https://unpkg.com/blogroller@latest/dist/blogroller.umd.js"></script>
 
 <script>
   const blogroll = new Blogroller.Blogroll();
@@ -82,7 +82,7 @@ Alternatively, you can write your own CSS rules targeting the `.blogroller-*` cl
 ### Basic Example
 Assume you have a `<div id="rss-feed"></div>` in your HTML. Then:
 ```js
-import { Blogroll } from 'blogroller';
+import { Blogroll } from 'https://unpkg.com/blogroller@latest/dist/blogroller.esm.js';
 
 const blogroll = new Blogroll();
 blogroll.initialize({
@@ -100,46 +100,6 @@ blogroll.initialize({
 
 **Result**: A blogroll that shows the latest posts from feeds that have the label "myCategory". If there are more than 5 items, a "Show More" link appears.
 
-### CDN / Script Tag
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Blogroller Example</title>
-    <link rel="stylesheet" href="https://unpkg.com/blogroller@1.1.0/dist/blogroller.css" />
-  </head>
-  <body>
-    <div id="rss-feed"></div>
-
-    <script src="https://unpkg.com/blogroller@1.1.0/dist/blogroller.umd.js"></script>
-
-    <script>
-      const blogroll = new Blogroller.Blogroll();
-      blogroll.initialize({
-        proxyUrl: 'https://example.com/my-proxy/',
-        categoryLabel: 'favorites',
-        batchSize: 5,
-        containerId: 'rss-feed',
-      });
-    </script>
-  </body>
-</html>
-```
-
-**Note**: The `Blogroller` global becomes available after the script loads.
-
-### ES Module Import
-```js
-import { Blogroller } from 'blogroller/dist/blogroller.esm.js';
-import 'blogroller/dist/blogroller.css';
-
-const blogroll = new Blogroll();
-blogroll.initialize({
-  proxyUrl: 'https://example.com/my-proxy/',
-  categoryLabel: 'myCategory',
-});
-```
 ## Contributing
 
 Contributions are welcome! Feel free to open issues or pull requests. If you'd like to add a new feature, kindly open an issue first to discuss it.
