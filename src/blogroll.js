@@ -1,6 +1,6 @@
-import { fetchSubscriptions, fetchFeedsData } from './api.js';
+import { fetchAllLatest } from './api.js';
 import { createFeedItem, createShowMoreLink } from './utils/dom.js';
-import { constructApiUrl, sortFeedsByDate } from './utils/common.js';
+import { calculateReadingTime, sortFeedsByDate } from './utils/common.js';
 import { CONFIG } from './config.js';
 import { DEFAULT_CONTAINER_ID, MESSAGES } from './constants.js';
 import '../styles/blogroller.css';
@@ -12,6 +12,8 @@ export class Blogroll {
   constructor() {
     this.config = null;
     this.showMoreLink = null;
+    this.currentPage = 1;
+    this.hasMoreFeeds = false;
   }
 
   /**
@@ -28,13 +30,6 @@ export class Blogroll {
     if (!this.config.proxyUrl.endsWith('/')) {
       this.config.proxyUrl += '/';
     }
-
-    // Construct derived URLs
-    this.config.subscriptionUrl = constructApiUrl(
-      this.config.proxyUrl,
-      this.config.subscriptionEndpoint,
-      { output: 'json' }
-    );
 
     this.loadFeeds();
   }
@@ -91,22 +86,77 @@ export class Blogroll {
    */
   async loadFeeds() {
     const feedContainer = this.getFeedContainer();
-    feedContainer.innerHTML = MESSAGES.LOADING;
+
+    if (this.currentPage === 1) {
+      feedContainer.innerHTML = MESSAGES.LOADING;
+    }
 
     try {
-      // Fetch and filter subscriptions by category
-      const subscriptions = await fetchSubscriptions(this.config);
-      const { feedsData, failedFeeds } = await fetchFeedsData(
-        subscriptions,
-        this.config
-      );
-      const sortedFeeds = sortFeedsByDate(feedsData);
+      const aggregatorData = await fetchAllLatest({
+        proxyUrl: this.config.proxyUrl,
+        categoryLabel: this.config.categoryLabel,
+        page: this.currentPage,
+        limit: this.config.batchSize,
+        n: 1,
+      });
 
-      if (failedFeeds.length > 0) {
-        console.warn(MESSAGES.ERROR.FETCH_FAILED, failedFeeds);
+      const aggregatorFeeds = aggregatorData.feeds;
+
+      if (!aggregatorFeeds || aggregatorFeeds.length === 0) {
+        if (this.currentPage === 1) {
+          feedContainer.innerHTML = MESSAGES.NO_POSTS;
+        }
+        return;
       }
 
-      this.displayFeeds(sortedFeeds);
+      const feedsData = aggregatorFeeds.map((feed) => {
+        const item = feed.items && feed.items[0];
+        if (!item) {
+          return {
+            feedTitle: feed.title || 'Untitled Feed',
+            feedUrl: feed.htmlUrl,
+            feedIcon: feed.iconUrl,
+            postTitle: 'No Posts',
+            postUrl: '#',
+            pubDate: null,
+            readingTime: null,
+          };
+        }
+
+        const publishedMs = item.published ? item.published * 1000 : NaN;
+        const postContent = item.summary?.content || '';
+
+        return {
+          feedTitle: feed.title || 'Untitled Feed',
+          feedUrl: feed.htmlUrl,
+          feedIcon: feed.iconUrl,
+          postTitle: item.title || 'Untitled Post',
+          postUrl: item.alternate?.[0]?.href || '#',
+          pubDate: isNaN(publishedMs) ? null : new Date(publishedMs),
+          readingTime: calculateReadingTime(postContent),
+        };
+      });
+
+      const sortedFeeds = sortFeedsByDate(feedsData);
+
+      if (this.currentPage === 1) {
+        feedContainer.innerHTML = '';
+      }
+
+      this.renderFeeds(sortedFeeds);
+
+      const totalFeeds = aggregatorData.totalFeeds || aggregatorFeeds.length;
+      const { page, limit } = aggregatorData;
+
+      this.hasMoreFeeds =
+        aggregatorFeeds.length === this.config.batchSize &&
+        page * limit < totalFeeds;
+
+      if (this.hasMoreFeeds) {
+        this.ensureShowMoreLink(feedContainer);
+      } else if (this.showMoreLink) {
+        this.showMoreLink.style.display = 'none';
+      }
     } catch (error) {
       console.error(MESSAGES.ERROR.LOAD_FEEDS_FAILED, error);
       feedContainer.innerHTML = MESSAGES.LOAD_FAILED;
@@ -117,14 +167,12 @@ export class Blogroll {
    * Render feeds into the container in a paginated way.
    *
    * @param {Array} feeds - Array of feed data objects.
-   * @param {number} startIndex - Starting index of feeds to render.
    **/
-  renderFeeds(feeds, startIndex = 0) {
+  renderFeeds(feeds) {
     const feedContainer = this.getFeedContainer();
     const fragment = document.createDocumentFragment();
-    const batch = feeds.slice(startIndex, startIndex + this.config.batchSize);
 
-    batch.forEach((feed) => {
+    feeds.forEach((feed) => {
       const feedItem = createFeedItem(feed);
       fragment.appendChild(feedItem);
     });
@@ -132,48 +180,17 @@ export class Blogroll {
     feedContainer.appendChild(fragment);
   }
 
-  /**
-   * Attach a "Show More" link to dynamically load more feeds.
-   *
-   * @param {Array} feeds - Array of feed data objects.
-   **/
-  attachShowMoreHandler(feeds) {
-    this.showMoreLink.addEventListener('click', (event) => {
-      event.preventDefault();
-
-      const feedContainer = this.getFeedContainer();
-      const currentCount = feedContainer.querySelectorAll(
-        '.blogroller-feed-item'
-      ).length;
-      this.renderFeeds(feeds, currentCount);
-
-      if (currentCount + this.config.batchSize >= feeds.length) {
-        this.showMoreLink.style.display = 'none';
-      }
-    });
-  }
-
-  /**
-   * Display the feeds in the container and manage "Show More" functionality.
-   *
-   * @param {Array} feeds - Array of sorted feed data objects.
-   **/
-  displayFeeds(feeds) {
-    const feedContainer = this.getFeedContainer();
-    feedContainer.innerHTML = ''; // Clear loading indicator
-
-    if (feeds.length === 0) {
-      feedContainer.innerHTML = MESSAGES.NO_POSTS;
-      return;
-    }
-
-    this.renderFeeds(feeds);
-
-    if (feeds.length > this.config.batchSize) {
+  ensureShowMoreLink(feedContainer) {
+    if (!this.showMoreLink) {
       this.showMoreLink = createShowMoreLink();
-      this.showMoreLink.style.display = 'block';
       feedContainer.parentElement.appendChild(this.showMoreLink);
-      this.attachShowMoreHandler(feeds);
+
+      this.showMoreLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        this.currentPage++;
+        this.loadFeeds();
+      });
     }
+    this.showMoreLink.style.display = 'block';
   }
 }

@@ -4,7 +4,6 @@ jest.mock('../src/config.js', () => ({
   CONFIG: {
     defaults: {
       documentClass: 'test-blogroll',
-      subscriptionEndpoint: 'test/subscription',
       batchSize: 5,
     },
     validation: {
@@ -45,7 +44,6 @@ describe('Blogroll Configuration Tests', () => {
 
     expect(blogroll.config).toMatchObject({
       documentClass: 'test-blogroll',
-      subscriptionEndpoint: 'test/subscription',
       batchSize: 5,
       proxyUrl: 'https://proxy.test.com/',
       categoryLabel: 'test',
