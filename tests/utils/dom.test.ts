@@ -1,62 +1,66 @@
-import { createFeedItem } from '../../src/utils/dom.js';
+import { TransformedFeed } from '../../src/types';
+import { createFeedItem } from '../../src/utils/dom';
 
 describe('createFeedItem', () => {
   test('should create a valid DOM element for a feed item', () => {
-    const mockData = {
+    const mockData: TransformedFeed = {
       feedTitle: 'Test Feed Item',
       postTitle: 'Sample Post',
       feedUrl: 'https://test.com',
       postUrl: 'https://test.com/post',
-      pubData: new Date('2024-01-01').toISOString(),
+      pubDate: new Date('2024-01-01'),
       feedIcon: 'https://test.com/icon.png',
       readingTime: '5 min read',
     };
 
     const feedItem = createFeedItem(mockData);
-
-    // Check that the returned element is a DOM node
     expect(feedItem).toBeInstanceOf(HTMLElement);
 
-    // Validate structure
     const titleElement = feedItem.querySelector('.blogroller-feed-title-link');
-    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
-
     expect(titleElement).not.toBeNull();
-    expect(titleElement.textContent.trim()).toBe(mockData.feedTitle);
-    expect(linkElement.href).toBe(mockData.postUrl);
+    expect(titleElement!.textContent!.trim()).toBe(mockData.feedTitle);
+
+    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
+    expect(linkElement).not.toBeNull();
+    expect(linkElement!.getAttribute('href')).toBe(mockData.postUrl);
   });
 
   test('should sanitize potentially harmful scripts', () => {
-    const mockData = {
+    const mockData: TransformedFeed = {
       feedTitle: '<script>alert("XSS")</script>',
       postTitle: 'Sample Post',
       feedUrl: 'https://test.com',
       postUrl: 'javascript:alert("XSS")',
-      pubData: new Date().toISOString(),
+      pubDate: new Date(),
       feedIcon: 'https://test.com/icon.png',
+      readingTime: null,
     };
 
     const feedItem = createFeedItem(mockData);
 
     // Ensure the title is sanitized
     const titleElement = feedItem.querySelector('.blogroller-feed-title-link');
-    expect(titleElement.innerHTML).not.toContain('<script>');
-    expect(titleElement.textContent).toBe(
+    expect(titleElement).not.toBeNull();
+    expect(titleElement!.innerHTML).not.toContain('<script>');
+    expect(titleElement!.textContent).toBe(
       '&lt;script&gt;alert("XSS")&lt;/script&gt;'
     );
 
     // Ensure the link is sanitized or omitted
-    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
-    expect(linkElement.href).not.toContain('javascript');
+    const linkElement = feedItem.querySelector<HTMLAnchorElement>(
+      '.blogroller-post-title-link'
+    );
+    expect(linkElement).not.toBeNull();
+    expect(linkElement!.href).not.toContain('javascript');
   });
 
   test('should handle invalid or missing pubDate gracefully', () => {
-    const mockData = {
+    const mockData: TransformedFeed = {
       feedTitle: 'Test Feed',
       postTitle: 'Sample Post',
       feedUrl: 'https://test.com',
       postUrl: 'https://test.com/post',
-      pubDate: 'invalid-date',
+      pubDate: null,
       feedIcon: 'https://test.com/icon.png',
       readingTime: '5 min read',
     };
@@ -65,11 +69,19 @@ describe('createFeedItem', () => {
 
     expect(feedItem).toBeInstanceOf(HTMLElement);
     const metaElement = feedItem.querySelector('.blogroller-post-date');
-    expect(metaElement.textContent.trim()).toBe('Unknown Date');
+    expect(metaElement).not.toBeNull();
+    expect(metaElement!.textContent!.trim()).toBe('Unknown Date');
   });
 
   test('should handle missing or invalid data gracefully', () => {
-    const mockData = { feedTitle: '', postTitle: '', pubDate: '' };
+    const mockData: TransformedFeed = {
+      feedTitle: '',
+      postTitle: '',
+      pubDate: null,
+      feedUrl: '',
+      postUrl: '',
+      readingTime: null,
+    };
 
     const feedItem = createFeedItem(mockData);
 
@@ -78,21 +90,25 @@ describe('createFeedItem', () => {
 
     // Ensure the content is default or empty
     const titleElement = feedItem.querySelector('.blogroller-feed-title-link');
-    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
-    const postDateElement = feedItem.querySelector('.blogroller-post-date');
+    expect(titleElement).not.toBeNull();
+    expect(titleElement!.textContent).toBe('Untitled Feed');
 
-    expect(titleElement.textContent).toBe('Untitled Feed');
-    expect(linkElement.textContent).toBe('Untitled Post');
-    expect(postDateElement.textContent).toBe('Unknown Date');
+    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
+    expect(linkElement).not.toBeNull();
+    expect(linkElement!.textContent).toBe('Untitled Post');
+
+    const postDateElement = feedItem.querySelector('.blogroller-post-date');
+    expect(postDateElement).not.toBeNull();
+    expect(postDateElement!.textContent).toBe('Unknown Date');
   });
 
-  test.skip('should handle feed item without feedIcon', () => {
-    const mockData = {
+  test('should handle feed item without feedIcon', () => {
+    const mockData: TransformedFeed = {
       feedTitle: 'Test Feed Item',
       postTitle: 'Sample Post',
       feedUrl: 'https://test.com',
       postUrl: 'https://test.com/post',
-      pubDate: new Date('2024-01-01').toISOString(),
+      pubDate: new Date('2024-01-01'),
       readingTime: '5 min read',
     };
 
@@ -103,13 +119,13 @@ describe('createFeedItem', () => {
     expect(iconElement).toBeNull();
   });
 
-  test.skip('should handle special characters in postTitle', () => {
-    const mockData = {
+  test('should handle special characters in postTitle', () => {
+    const mockData: TransformedFeed = {
       feedTitle: 'Test Feed Item',
       postTitle: 'Sample <b>Post</b>',
       feedUrl: 'https://test.com',
       postUrl: 'https://test.com/post',
-      pubDate: new Date('2024-01-01').toISOString(),
+      pubDate: new Date('2024-01-01'),
       feedIcon: 'https://test.com/icon.png',
       readingTime: '5 min read',
     };
@@ -117,17 +133,19 @@ describe('createFeedItem', () => {
     const feedItem = createFeedItem(mockData);
 
     const linkElement = feedItem.querySelector('.blogroller-post-title-link');
-    expect(linkElement.innerHTML).toBe('Sample &lt;b&gt;Post&lt;/b&gt;');
+    expect(linkElement).not.toBeNull();
+    expect(linkElement!.innerHTML).toBe('Sample &lt;b&gt;Post&lt;/b&gt;');
   });
 
   test('should handle feed item with no readingTime', () => {
-    const mockData = {
+    const mockData: TransformedFeed = {
       feedTitle: 'Test Feed Item',
       postTitle: 'Sample Post',
       feedUrl: 'https://test.com',
       postUrl: 'https://test.com/post',
-      pubDate: new Date('2024-01-01').toISOString(),
+      pubDate: new Date('2024-01-01'),
       feedIcon: 'https://test.com/icon.png',
+      readingTime: null,
     };
 
     const feedItem = createFeedItem(mockData);
@@ -135,16 +153,17 @@ describe('createFeedItem', () => {
     const readingTimeElement = feedItem.querySelector(
       '.blogroller-reading-time'
     );
-    expect(readingTimeElement.textContent.trim()).toBe('N/A');
+    expect(readingTimeElement).not.toBeNull();
+    expect(readingTimeElement!.textContent!.trim()).toBe('N/A');
   });
 
   test('should handle long feedTitle and postTitle', () => {
-    const mockData = {
+    const mockData: TransformedFeed = {
       feedTitle: 'A'.repeat(300),
       postTitle: 'B'.repeat(300),
       feedUrl: 'https://test.com',
       postUrl: 'https://test.com/post',
-      pubDate: new Date('2024-01-01').toISOString(),
+      pubDate: new Date('2024-01-01'),
       feedIcon: 'https://test.com/icon.png',
       readingTime: '5 min read',
     };
@@ -152,9 +171,11 @@ describe('createFeedItem', () => {
     const feedItem = createFeedItem(mockData);
 
     const titleElement = feedItem.querySelector('.blogroller-feed-title-link');
-    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
+    expect(titleElement).not.toBeNull();
+    expect(titleElement!.textContent!.length).toBe(300);
 
-    expect(titleElement.textContent.length).toBe(300);
-    expect(linkElement.textContent.length).toBe(300);
+    const linkElement = feedItem.querySelector('.blogroller-post-title-link');
+    expect(linkElement).not.toBeNull();
+    expect(linkElement!.textContent!.length).toBe(300);
   });
 });

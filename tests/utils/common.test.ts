@@ -1,7 +1,5 @@
-import {
-  calculateReadingTime,
-  sortFeedsByDate,
-} from '../../src/utils/common.js';
+import { SortableFeed } from '../../src/types';
+import { calculateReadingTime, sortFeedsByDate } from '../../src/utils/common';
 
 describe('calculateReadingTime', () => {
   const content = 'This is a sample text for testing';
@@ -15,17 +13,7 @@ describe('calculateReadingTime', () => {
     expect(calculateReadingTime(html)).toBe('1 min read');
   });
 
-  test('should throw error for invalid input', () => {
-    expect(() => calculateReadingTime(12345)).toThrow(
-      "Invalid content provided to 'calculateReadingTime'. Expected a string."
-    );
-  });
-
   test('should throw an error for invalid wordsPerMinute value', () => {
-    expect(() => calculateReadingTime(content, 'invalid')).toThrow(
-      "Invalid 'wordsPerMinute' value. Expected a positive number."
-    );
-
     expect(() => calculateReadingTime(content, -100)).toThrow(
       "Invalid 'wordsPerMinute' value. Expected a positive number."
     );
@@ -59,7 +47,7 @@ describe('calculateReadingTime', () => {
 
 describe('sortFeedsByDate', () => {
   test('should sort feeds in descending order by pubDate', () => {
-    const feeds = [
+    const feeds: SortableFeed[] = [
       { pubDate: new Date('2022-01-01') },
       { pubDate: new Date('2023-01-01') },
       { pubDate: new Date('2021-01-01') },
@@ -75,11 +63,11 @@ describe('sortFeedsByDate', () => {
   });
 
   test('should ignore null or invalid dates', () => {
-    const feeds = [
+    const feeds: SortableFeed[] = [
       { pubDate: new Date('2022-01-01') },
       { pubDate: null },
       { pubDate: new Date('2021-01-01') },
-      { pubDate: 'invalid-date' },
+      { pubDate: new Date(NaN) },
     ];
 
     const sorted = sortFeedsByDate(feeds);
@@ -91,7 +79,7 @@ describe('sortFeedsByDate', () => {
   });
 
   test('should handle feeds with same pubDate', () => {
-    const feeds = [
+    const feeds: SortableFeed[] = [
       { pubDate: new Date('2022-01-01') },
       { pubDate: new Date('2022-01-01') },
     ];
@@ -105,14 +93,14 @@ describe('sortFeedsByDate', () => {
   });
 
   test('should handle empty feeds array', () => {
-    const feeds = [];
+    const feeds: SortableFeed[] = [];
     const sorted = sortFeedsByDate(feeds);
 
     expect(sorted).toEqual([]);
   });
 
   test('should handle feeds with future dates', () => {
-    const feeds = [
+    const feeds: SortableFeed[] = [
       { pubDate: new Date('2045-01-01') },
       { pubDate: new Date('2023-01-01') },
     ];

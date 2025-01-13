@@ -1,4 +1,4 @@
-import { getRelativeDate } from '../../src/utils/date.js';
+import { getRelativeDate } from '../../src/utils/date';
 
 describe('date.js', () => {
   describe('getRelativeDate', () => {

@@ -2,9 +2,10 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import commonjs from '@rollup/plugin-commonjs';
 import postcss from 'rollup-plugin-postcss';
+import typescript from '@rollup/plugin-typescript';
 
 export default {
-  input: 'src/blogroll.js',
+  input: 'src/blogroll.ts',
   output: [
     {
       file: 'dist/blogroller.umd.js',
@@ -27,5 +28,6 @@ export default {
       extract: 'blogroller.css',
       minimize: true,
     }),
+    typescript({ tsconfig: './tsconfig.json' }),
   ],
 };
