@@ -1,7 +1,7 @@
 import { PREFIX } from './constants';
 import { AggregatorResponse } from './types';
 
-interface FetchAllLatestOptions {
+interface FetchDigestOptions {
   proxyUrl: string;
   categoryLabel?: string;
   page?: number;
@@ -10,16 +10,16 @@ interface FetchAllLatestOptions {
 }
 
 /**
- * Fetches aggregated latest posts from the proxy's /all-latest endpoint.
+ * Fetches aggregated latest posts from the proxy's /digest endpoint.
  */
-export async function fetchAllLatest({
+export async function fetchDigest({
   proxyUrl,
   categoryLabel,
   page = 1,
   limit = 10,
   n = 1,
-}: FetchAllLatestOptions): Promise<AggregatorResponse> {
-  const url = new URL(`${proxyUrl}all-latest`);
+}: FetchDigestOptions): Promise<AggregatorResponse> {
+  const url = new URL(`${proxyUrl}digest`);
 
   if (categoryLabel) {
     url.searchParams.set('label', categoryLabel);

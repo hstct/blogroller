@@ -1,10 +1,10 @@
-import { fetchAllLatest } from './api';
+import { fetchDigest } from './api';
 import { createFeedItem, createShowMoreLink } from './utils/dom';
-import { calculateReadingTime, sortFeedsByDate } from './utils/common';
+import { calculateReadingTime } from './utils/common';
 import { CONFIG } from './config';
 import { DEFAULT_CONTAINER_ID, MESSAGES } from './constants';
 import '../styles/blogroller.css';
-import { AggregatorFeed, AggregatorResponse, TransformedFeed } from './types';
+import { AggregatorItem, AggregatorResponse, TransformedFeed } from './types';
 
 interface BlogrollUserConfig {
   proxyUrl: string;
@@ -101,7 +101,7 @@ export class Blogroll {
     }
 
     try {
-      const aggregatorData: AggregatorResponse = await fetchAllLatest({
+      const aggregatorData: AggregatorResponse = await fetchDigest({
         proxyUrl: this.config.proxyUrl,
         categoryLabel: this.config.categoryLabel,
         page: this.currentPage,
@@ -109,30 +109,27 @@ export class Blogroll {
         n: 1,
       });
 
-      const aggregatorFeeds = aggregatorData.feeds;
+      const aggregatorItems = aggregatorData.items;
 
-      if (!aggregatorFeeds || aggregatorFeeds.length === 0) {
+      if (!aggregatorItems || aggregatorItems.length === 0) {
         if (this.currentPage === 1) {
           feedContainer.innerHTML = MESSAGES.NO_POSTS;
         }
         return;
       }
 
-      const transformed = this.transformFeeds(aggregatorFeeds);
-      const sortedFeeds = sortFeedsByDate<TransformedFeed>(transformed);
+      const transformed = this.transformFeeds(aggregatorItems);
 
       if (this.currentPage === 1) {
         feedContainer.innerHTML = '';
       }
 
-      this.renderFeeds(sortedFeeds, aggregatorData);
+      this.renderFeeds(transformed, aggregatorData);
 
-      const totalFeeds = aggregatorData.totalFeeds || aggregatorFeeds.length;
-      const { page, limit } = aggregatorData;
-
+      const { page, limit, totalItems } = aggregatorData;
       this.hasMoreFeeds =
-        aggregatorFeeds.length === this.config.batchSize &&
-        page * limit < totalFeeds;
+        aggregatorItems.length === this.config.batchSize &&
+        page * limit < totalItems;
 
       if (this.hasMoreFeeds) {
         this.ensureShowMoreLink(feedContainer);
@@ -148,26 +145,14 @@ export class Blogroll {
   /**
    * Converts aggregator data into an array of TransformedFeed objects.
    */
-  private transformFeeds(feeds: AggregatorFeed[]): TransformedFeed[] {
-    return feeds.map((feed) => {
-      const item = feed.items && feed.items[0];
-      if (!item) {
-        return {
-          feedTitle: feed.title || 'Untitled Feed',
-          feedUrl: feed.htmlUrl ?? '#',
-          feedIcon: feed.iconUrl,
-          postTitle: 'No Posts',
-          postUrl: '#',
-          pubDate: null,
-          readingTime: null,
-        };
-      }
+  private transformFeeds(items: AggregatorItem[]): TransformedFeed[] {
+    return items.map((item) => {
       const publishedMs = item.published ? item.published * 1000 : NaN;
       const postContent = item.summary?.content || '';
       return {
-        feedTitle: feed.title || 'Untitled Feed',
-        feedUrl: feed.htmlUrl ?? '#',
-        feedIcon: feed.iconUrl,
+        feedTitle: item.feedTitle || 'Untitled Feed',
+        feedUrl: item.feedHtmlUrl ?? '#',
+        feedIcon: item.feedIconUrl,
         postTitle: item.title || 'Untitled Post',
         postUrl: item.alternate?.[0]?.href || '#',
         pubDate: isNaN(publishedMs) ? null : new Date(publishedMs),
@@ -193,12 +178,10 @@ export class Blogroll {
 
     feedContainer.appendChild(fragment);
 
-    const totalFeeds = aggregatorData.totalFeeds || aggregatorData.feeds.length;
-    const { page, limit } = aggregatorData;
+    const { page, limit, items, totalItems } = aggregatorData;
 
     this.hasMoreFeeds =
-      aggregatorData.feeds.length == this.config.batchSize &&
-      page * limit < totalFeeds;
+      items.length === this.config.batchSize && page * limit < totalItems;
 
     if (this.hasMoreFeeds) {
       this.ensureShowMoreLink(feedContainer);

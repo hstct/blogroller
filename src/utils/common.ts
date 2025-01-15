@@ -1,5 +1,3 @@
-import { SortableFeed } from '../types';
-
 /**
  * Estimates the average reading time of a text based on the word count.
  * @param content - The text content (e.g., HTML or plain text).
@@ -32,19 +30,4 @@ export function calculateReadingTime(
   // Calculate and format reading time
   const minutes = Math.ceil(wordCount / wordsPerMinute);
   return `${minutes} min read`;
-}
-
-/**
- * Sort feeds by publication date in descending order.
- * @param feeds - Array of feed data objects.
- * @returns The Sorted feeds, newest first.
- */
-export function sortFeedsByDate<T extends SortableFeed>(feeds: T[]): T[] {
-  const validFeeds = feeds.filter((feed) => {
-    if (!feed.pubDate) return false;
-    if (isNaN(feed.pubDate.getTime())) return false;
-    return true;
-  });
-  validFeeds.sort((a, b) => b.pubDate!.getTime() - a.pubDate!.getTime());
-  return validFeeds;
 }

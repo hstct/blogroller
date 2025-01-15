@@ -1,26 +1,20 @@
-/** A single feed item returned by aggregatorData */
-export interface FeedPost {
+export interface AggregatorItem {
   title: string;
   published?: number;
   alternate?: Array<{ href: string }>;
   summary?: { content: string };
+  feedId?: string;
+  feedTitle?: string;
+  feedHtmlUrl?: string;
+  feedIconUrl?: string;
+  author?: string;
 }
 
-/** A feed object from aggregator endpoint. */
-export interface AggregatorFeed {
-  id: string;
-  title?: string;
-  htmlUrl?: string;
-  iconUrl?: string;
-  items?: FeedPost[];
-}
-
-/** The aggregator response shape from /all-latest. */
 export interface AggregatorResponse {
-  feeds: AggregatorFeed[];
+  items: AggregatorItem[];
   page: number;
   limit: number;
-  totalFeeds: number;
+  totalItems: number;
 }
 
 export interface SortableFeed {
@@ -28,7 +22,6 @@ export interface SortableFeed {
   [key: string]: unknown;
 }
 
-/** The shape we transform aggregator feeds into. */
 export interface TransformedFeed extends SortableFeed {
   feedTitle: string;
   feedUrl: string;

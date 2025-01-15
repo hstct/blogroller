@@ -1,5 +1,4 @@
-import { SortableFeed } from '../../src/types';
-import { calculateReadingTime, sortFeedsByDate } from '../../src/utils/common';
+import { calculateReadingTime } from '../../src/utils/common';
 
 describe('calculateReadingTime', () => {
   const content = 'This is a sample text for testing';
@@ -42,74 +41,5 @@ describe('calculateReadingTime', () => {
     const longContent = 'word '.repeat(1000);
     expect(calculateReadingTime(longContent, 200)).toBe('5 min read');
     expect(calculateReadingTime(longContent, 300)).toBe('4 min read');
-  });
-});
-
-describe('sortFeedsByDate', () => {
-  test('should sort feeds in descending order by pubDate', () => {
-    const feeds: SortableFeed[] = [
-      { pubDate: new Date('2022-01-01') },
-      { pubDate: new Date('2023-01-01') },
-      { pubDate: new Date('2021-01-01') },
-    ];
-
-    const sorted = sortFeedsByDate(feeds);
-
-    expect(sorted).toEqual([
-      { pubDate: new Date('2023-01-01') },
-      { pubDate: new Date('2022-01-01') },
-      { pubDate: new Date('2021-01-01') },
-    ]);
-  });
-
-  test('should ignore null or invalid dates', () => {
-    const feeds: SortableFeed[] = [
-      { pubDate: new Date('2022-01-01') },
-      { pubDate: null },
-      { pubDate: new Date('2021-01-01') },
-      { pubDate: new Date(NaN) },
-    ];
-
-    const sorted = sortFeedsByDate(feeds);
-
-    expect(sorted).toEqual([
-      { pubDate: new Date('2022-01-01') },
-      { pubDate: new Date('2021-01-01') },
-    ]);
-  });
-
-  test('should handle feeds with same pubDate', () => {
-    const feeds: SortableFeed[] = [
-      { pubDate: new Date('2022-01-01') },
-      { pubDate: new Date('2022-01-01') },
-    ];
-
-    const sorted = sortFeedsByDate(feeds);
-
-    expect(sorted).toEqual([
-      { pubDate: new Date('2022-01-01') },
-      { pubDate: new Date('2022-01-01') },
-    ]);
-  });
-
-  test('should handle empty feeds array', () => {
-    const feeds: SortableFeed[] = [];
-    const sorted = sortFeedsByDate(feeds);
-
-    expect(sorted).toEqual([]);
-  });
-
-  test('should handle feeds with future dates', () => {
-    const feeds: SortableFeed[] = [
-      { pubDate: new Date('2045-01-01') },
-      { pubDate: new Date('2023-01-01') },
-    ];
-
-    const sorted = sortFeedsByDate(feeds);
-
-    expect(sorted).toEqual([
-      { pubDate: new Date('2045-01-01') },
-      { pubDate: new Date('2023-01-01') },
-    ]);
   });
 });

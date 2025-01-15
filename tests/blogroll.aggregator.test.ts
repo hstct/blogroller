@@ -1,12 +1,12 @@
 import { Blogroll } from '../src/blogroll';
-import { fetchAllLatest } from '../src/api';
+import { fetchDigest } from '../src/api';
 import { MESSAGES } from '../src/constants';
 
-const mockFetchAllLatest = fetchAllLatest as jest.Mock;
+const mockFetchDigest = fetchDigest as jest.Mock;
 
 jest.mock('../src/api', () => {
   return {
-    fetchAllLatest: jest.fn(),
+    fetchDigest: jest.fn(),
   };
 });
 
@@ -26,38 +26,30 @@ describe('Blogroll Aggregator Tests', () => {
   });
 
   test('should call aggregator on load and render returned feeds', async () => {
-    mockFetchAllLatest.mockResolvedValueOnce({
-      feeds: [
+    mockFetchDigest.mockResolvedValueOnce({
+      items: [
         {
-          id: 'feed/100',
-          title: 'Feed 100',
-          htmlUrl: 'https://feed100.example.com',
-          iconUrl: 'https://feed100.example.com/icon.png',
-          items: [
-            {
-              title: 'Post 100A',
-              published: 1697000000,
-              alternate: [{ href: 'https://feed100.example.com/postA' }],
-            },
-          ],
+          title: 'Post 100A',
+          published: 1697000000,
+          feedId: 'feed/100',
+          feedTitle: 'Feed 100',
+          feedHtmlUrl: 'https://feed100.example.com',
+          feedIconUrl: 'https://feed100.example.com/icon.png',
+          alternate: [{ href: 'https://feed100.example.com/postA' }],
         },
         {
-          id: 'feed/200',
-          title: 'Feed 200',
-          htmlUrl: 'https://feed200.example.com',
-          iconUrl: 'https://feed200.example.com/icon.png',
-          items: [
-            {
-              title: 'Post 200A',
-              published: 1697100000,
-              alternate: [{ href: 'https://feed200.example.com/postA' }],
-            },
-          ],
+          title: 'Post 200A',
+          published: 1697100000,
+          feedId: 'feed/200',
+          feedTitle: 'Feed 200',
+          feedHtmlUrl: 'https://feed200.example.com',
+          feedIconUrl: 'https://feed200.example.com/icon.png',
+          alternate: [{ href: 'https://feed200.example.com/postA' }],
         },
       ],
       page: 1,
       limit: 5,
-      totalFeeds: 2,
+      totalItems: 2,
     });
 
     blogroll.initialize({
@@ -68,7 +60,7 @@ describe('Blogroll Aggregator Tests', () => {
 
     await Promise.resolve();
 
-    expect(fetchAllLatest).toHaveBeenCalledTimes(1);
+    expect(fetchDigest).toHaveBeenCalledTimes(1);
 
     const feedItems = container.querySelectorAll('.blogroller-feed-item');
     expect(feedItems.length).toBe(2);
@@ -84,11 +76,11 @@ describe('Blogroll Aggregator Tests', () => {
   });
 
   test('should display NO_POSTS message if aggregator returns no feeds', async () => {
-    mockFetchAllLatest.mockResolvedValueOnce({
-      feeds: [],
+    mockFetchDigest.mockResolvedValueOnce({
+      items: [],
       page: 1,
       limit: 5,
-      totalFeeds: 0,
+      totalItems: 0,
     });
 
     blogroll.initialize({
@@ -99,49 +91,41 @@ describe('Blogroll Aggregator Tests', () => {
 
     await Promise.resolve();
 
-    expect(fetchAllLatest).toHaveBeenCalledTimes(1);
+    expect(fetchDigest).toHaveBeenCalledTimes(1);
     expect(container.innerHTML).toBe(MESSAGES.NO_POSTS);
   });
 
   test('should handle pagination with Show More link', async () => {
-    mockFetchAllLatest.mockResolvedValueOnce({
-      feeds: [
+    mockFetchDigest.mockResolvedValueOnce({
+      items: [
         {
-          id: 'feed/300',
-          title: 'Feed 300',
-          htmlUrl: 'https://feed300.example.com',
-          items: [
-            {
-              title: 'Post 300A',
-              published: 1697000000,
-              alternate: [{ href: 'https://feed300.example.com/postA' }],
-            },
-          ],
+          title: 'Post 300A',
+          published: 1697000000,
+          feedId: 'feed/300',
+          feedTitle: 'Feed 300',
+          feedHtmlUrl: 'https://feed300.example.com',
+          alternate: [{ href: 'https://feed300.example.com/postA' }],
         },
       ],
       page: 1,
       limit: 1,
-      totalFeeds: 2,
+      totalItems: 2,
     });
 
-    mockFetchAllLatest.mockResolvedValueOnce({
-      feeds: [
+    mockFetchDigest.mockResolvedValueOnce({
+      items: [
         {
-          id: 'feed/400',
-          title: 'Feed 400',
-          htmlUrl: 'https://feed400.example.com',
-          items: [
-            {
-              title: 'Post 400A',
-              published: 1697100000,
-              alternate: [{ href: 'https://feed400.example.com/postA' }],
-            },
-          ],
+          title: 'Post 400A',
+          published: 1697100000,
+          feedId: 'feed/400',
+          feedTitle: 'Feed 400',
+          feedHtmlUrl: 'https://feed400.example.com',
+          alternate: [{ href: 'https://feed400.example.com/postA' }],
         },
       ],
       page: 2,
       limit: 1,
-      totalFeeds: 2,
+      totalItems: 2,
     });
 
     blogroll.initialize({
@@ -161,7 +145,7 @@ describe('Blogroll Aggregator Tests', () => {
     showMoreLink!.click();
     await Promise.resolve();
 
-    expect(fetchAllLatest).toHaveBeenCalledTimes(2);
+    expect(fetchDigest).toHaveBeenCalledTimes(2);
 
     // container should now show 2 feed items total
     feedItems = container.querySelectorAll('.blogroller-feed-item');
