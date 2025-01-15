@@ -50,6 +50,7 @@ function createFeedHeader(
     feedIcon.src = feedIconUrl || '';
     feedIcon.alt = `${feedTitle} icon`;
     feedIcon.className = 'blogroller-feed-icon';
+    feedIcon.loading = 'lazy';
     feedIcon.setAttribute('referrerpolicy', 'no-referrer');
 
     feedLink.appendChild(feedIcon);
