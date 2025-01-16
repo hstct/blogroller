@@ -17,9 +17,28 @@ A lightweight JavaScript library for fetching and displaying RSS feeds from a Fr
 
 ## Setup FreshRSS Proxy
 
-**Blogroller** requires a FreshRSS proxy to securely access your FreshRSS instance's API and protect your credentials. The [FreshProxy](https://github.com/hstct/FreshProxy) is a Python Flask application that you need to host separately. Check the repository for detailed instructions.
+**Blogroller** requires a FreshRSS proxy to securely access your FreshRSS instance's API and protect your credentials. We recommend [FreshProxy](https://github.com/hstct/FreshProxy), a Python Flask application you can host separately. By default, FreshProxy now provides a single `/digest` endpoint that returns JSON data shaped like:
+```json
+{
+  "items": [
+    {
+      "title": "Some Post",
+      "published": 1697000000,
+      "feedId": "feed/123",
+      "feedTitle": "Example Feed",
+      "feedHtmlUrl": "https://example.com",
+      "feedIconUrl": "https://example.com/icon.png",
+      "alternate": [{ "href": "https://example.com/post" }]
+    }
+    // ...
+  ],
+  "page": 1,
+  "limit": 50,
+  "totalItems": 123
+}
+```
 
-**Note:** Deploy the Flask app to a hosting service (e.g. Heroku, AWS, DigitalOcean) to make it accessible via a public URL.
+**Note**: Deploy the Flask app to a hosting service (e.g. Heroku, AWS, DigitalOcean) to make it accessible via a public URL. Please check the [FreshProxy repo](https://github.com/hstct/FreshProxy) for detailed instructions on configuration and environment variables.
 
 ## Installation
 
