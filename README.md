@@ -16,19 +16,42 @@ A lightweight JavaScript library for fetching and displaying RSS feeds from a Fr
 - **Styling Customization**: Modify appearance using CSS variables or custom CSS.
 
 ## Setup FreshRSS Proxy
-**Blogroller** requires a FreshRSS proxy to securely access your FreshRSS instance's API and protect your credentials. The [FreshProxy](https://github.com/hstct/FreshProxy) is a Python Flask application that you need to host separately. Check the repository for detailed instructions.
 
-**Note:** Deploy the Flask app to a hosting service (e.g. Heroku, AWS, DigitalOcean) to make it accessible via a public URL.
+**Blogroller** requires a FreshRSS proxy to securely access your FreshRSS instance's API and protect your credentials. We recommend [FreshProxy](https://github.com/hstct/FreshProxy), a Python Flask application you can host separately. By default, FreshProxy now provides a single `/digest` endpoint that returns JSON data shaped like:
+```json
+{
+  "items": [
+    {
+      "title": "Some Post",
+      "published": 1697000000,
+      "feedId": "feed/123",
+      "feedTitle": "Example Feed",
+      "feedHtmlUrl": "https://example.com",
+      "feedIconUrl": "https://example.com/icon.png",
+      "alternate": [{ "href": "https://example.com/post" }]
+    }
+    // ...
+  ],
+  "page": 1,
+  "limit": 50,
+  "totalItems": 123
+}
+```
+
+**Note**: Deploy the Flask app to a hosting service (e.g. Heroku, AWS, DigitalOcean) to make it accessible via a public URL. Please check the [FreshProxy repo](https://github.com/hstct/FreshProxy) for detailed instructions on configuration and environment variables.
 
 ## Installation
 
 ### Via NPM
+
 Install **Blogroller** using npm:
+
 ```bash
 npm install blogroller
 ```
 
 Then import in your code:
+
 ```js
 import { Blogroll } from 'blogroller';
 ```
@@ -36,9 +59,13 @@ import { Blogroll } from 'blogroller';
 ### CDN / Script Tag
 
 You can also load **Blogroller** from a CDN like unpkg:
+
 ```html
 <!-- Include Blogroller CSS -->
-<link rel="stylesheet" href="https://unpkg.com/blogroller@latest/dist/blogroller.css" />
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/blogroller@latest/dist/blogroller.css"
+/>
 
 <!-- Include Blogroller JS -->
 <script src="https://unpkg.com/blogroller@latest/dist/blogroller.umd.js"></script>
@@ -61,7 +88,9 @@ This exposes a global `Blogroller` object (i.e., `window.Blogroller`).
 **Blogroller** provides default styling via the `blogroller.css` file, which you can customize to match your site's design. You can override the default styles using CSS variables or by adding your own CSS rules.
 
 ### Customizing Styles
+
 You can override the default CSS variables to customize colors. For example:
+
 ```css
 :root {
   --blogroller-border-color: #3c3836;
@@ -80,7 +109,9 @@ Alternatively, you can write your own CSS rules targeting the `.blogroller-*` cl
 ## Usage
 
 ### Basic Example
+
 Assume you have a `<div id="rss-feed"></div>` in your HTML. Then:
+
 ```js
 import { Blogroll } from 'https://unpkg.com/blogroller@latest/dist/blogroller.esm.js';
 
@@ -92,7 +123,9 @@ blogroll.initialize({
   containerId: 'rss-feed',
 });
 ```
+
 **Parameters:**
+
 - `proxyUrl` _(string, required)_: The URL to your FreshRSS proxy.
 - `categoryLabel` _(string, required)_: The label (or category) of the feeds in your FreshRSS instance you want to display.
 - `batchSize` _(number, optional)_: How many items to display initially (optional, default 10).

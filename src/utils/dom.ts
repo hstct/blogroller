@@ -1,18 +1,12 @@
-import { getRelativeDate } from './date.js';
+import { TransformedFeed } from '../types';
+import { getRelativeDate } from './date';
 
 /**
  * Escapes HTML special characters in a string.
- *
- * @param {string} input - The input string to sanitize.
- * @returns {string} - A sanitized string safe for embedding in HTML.
+ * @param input - The input string to sanitize.
+ * @returns A sanitized string safe for embedding in HTML.
  */
-function escapeHTML(input) {
-  if (typeof input !== 'string') {
-    console.warn(
-      'escapeHTML: Non-string input received. Returning empty string.'
-    );
-    return '';
-  }
+function escapeHTML(input: string): string {
   const div = document.createElement('div');
   div.textContent = input;
   return div.innerHTML;
@@ -20,12 +14,10 @@ function escapeHTML(input) {
 
 /**
  * Validates a URL and ensures it uses a safe protocol.
- *
- * @param {string} url - The URL to validate.
- * @param {string} [fallback="#"] - The fallback value for invalid URLs.
- * @returns {string} - The validated URL or a placeholder.
+ * @param url - The URL to validate.
+ * @param fallback - Fallback if invalid (default '#').
  */
-function validateUrl(url, fallback = '#') {
+function validateUrl(url: string, fallback = '#'): string {
   try {
     const parsedUrl = new URL(url);
     if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
@@ -38,14 +30,13 @@ function validateUrl(url, fallback = '#') {
 }
 
 /**
- * Create the feed header element.
- *
- * @param {string} feedTitle - The title of the feed.
- * @param {string} feedUrl - The URL of the feed.
- * @param {string} feedIconUrl - The URL of the feed icon.
- * @returns {HTMLElement} - The feed header element.
+ * Create the feed header element for a feed item.
  */
-function createFeedHeader(feedTitle, feedUrl, feedIconUrl) {
+function createFeedHeader(
+  feedTitle: string,
+  feedUrl: string,
+  feedIconUrl?: string
+): HTMLDivElement {
   const feedHeader = document.createElement('div');
   feedHeader.className = 'blogroller-feed-header';
 
@@ -54,13 +45,17 @@ function createFeedHeader(feedTitle, feedUrl, feedIconUrl) {
   feedLink.target = '_blank';
   feedLink.className = 'blogroller-feed-title-link';
 
-  const feedIcon = document.createElement('img');
-  feedIcon.src = feedIconUrl || '';
-  feedIcon.alt = `${feedTitle} icon`;
-  feedIcon.className = 'blogroller-feed-icon';
-  feedIcon.setAttribute('referrerpolicy', 'no-referrer');
+  if (feedIconUrl) {
+    const feedIcon = document.createElement('img');
+    feedIcon.src = feedIconUrl || '';
+    feedIcon.alt = `${feedTitle} icon`;
+    feedIcon.className = 'blogroller-feed-icon';
+    feedIcon.loading = 'lazy';
+    feedIcon.setAttribute('referrerpolicy', 'no-referrer');
 
-  feedLink.appendChild(feedIcon);
+    feedLink.appendChild(feedIcon);
+  }
+
   feedLink.appendChild(document.createTextNode(feedTitle));
   feedHeader.appendChild(feedLink);
 
@@ -68,30 +63,25 @@ function createFeedHeader(feedTitle, feedUrl, feedIconUrl) {
 }
 
 /**
- * Create the post link element.
- *
- * @param {string} postTitle - The title of the post.
- * @param {string} postUrl - The URL of the post.
- * @returns {HTMLElement} - The post link element.
+ * Creates a clickable post link element.
  */
-function createPostLink(postTitle, postUrl) {
+function createPostLink(postTitle: string, postUrl: string): HTMLAnchorElement {
   const postLink = document.createElement('a');
   postLink.href = postUrl || '#';
   postLink.target = '_blank';
   postLink.className = 'blogroller-post-title-link';
-  postLink.textContent = postTitle;
+  postLink.innerHTML = postTitle;
 
   return postLink;
 }
 
 /**
- * Create the feed meta element.
- *
- * @param {string} readingTime - The reading time of the post.
- * @param {string} relativeDate - The relative date of the post.
- * @returns {HTMLElement} - The feed meta element.
+ * Creates the "metadata" section showing reading time and relative date.
  */
-function createFeedMeta(readingTime, relativeDate) {
+function createFeedMeta(
+  readingTime: string | null,
+  relativeDate: string
+): HTMLDivElement {
   const feedMeta = document.createElement('div');
   feedMeta.className = 'blogroller-feed-meta';
 
@@ -115,12 +105,9 @@ function createFeedMeta(readingTime, relativeDate) {
 }
 
 /**
- * Create a single feed item element.
- *
- * @param {Object} feed - Feed data object.
- * @returns {HTMLElement} - DOM element for the feed item.
+ * Creates a single feed item element in the DOM, representing a feed's latest post.
  **/
-export function createFeedItem(feed) {
+export function createFeedItem(feed: TransformedFeed): HTMLDivElement {
   const feedTitle = escapeHTML(feed.feedTitle) || 'Untitled Feed';
   const postTitle = escapeHTML(feed.postTitle) || 'Untitled Post';
   const relativeDate = getRelativeDate(feed.pubDate);
@@ -142,11 +129,9 @@ export function createFeedItem(feed) {
 }
 
 /**
- * Create a "Show More" link element.
- *
- * @returns {HTMLElement} - DOM element for the "Show More" link.
+ * Creates an initially hidden "Show More" link element for pagination.
  **/
-export function createShowMoreLink() {
+export function createShowMoreLink(): HTMLAnchorElement {
   const showMoreLink = document.createElement('a');
   showMoreLink.id = 'blogroller-show-more';
   showMoreLink.href = '#';
