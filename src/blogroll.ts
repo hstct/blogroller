@@ -1,4 +1,4 @@
-import { fetchDigest } from './api';
+import { fetchDigest, fetchLabelStream } from './api';
 import { createFeedItem, createShowMoreLink } from './utils/dom';
 import { calculateReadingTime } from './utils/common';
 import { CONFIG } from './config';
@@ -23,12 +23,29 @@ export class Blogroll {
   private showMoreLink: HTMLAnchorElement | null = null;
   private currentPage = 1;
   private hasMoreFeeds = false;
+  private useLabelEndpoint = false;
+  private continuation: string | null = null;
 
   /**
    * Initializes the Blogroll with a user config object.
    */
   public initialize(config: BlogrollUserConfig): void {
     const mergedConfig = { ...CONFIG.defaults, ...config };
+
+    // Peek at container for implicit label-mode and label value
+    const containerId = config.containerId || DEFAULT_CONTAINER_ID;
+    const containerEl = typeof document !== 'undefined'
+      ? document.getElementById(containerId)
+      : null;
+    const dataLabel = containerEl?.dataset?.label;
+    const dataEndpoint = containerEl?.dataset?.endpoint;
+    const isSpecialId = containerEl?.id === 'rss-feed-label';
+    const inferLabelMode = isSpecialId || dataEndpoint === 'label' || !!dataLabel;
+
+    // Fill categoryLabel from DOM if not provided
+    if (!mergedConfig.categoryLabel && dataLabel) {
+      (mergedConfig as any).categoryLabel = dataLabel;
+    }
 
     // Validate the configuration
     this.validateConfig(mergedConfig);
@@ -42,6 +59,9 @@ export class Blogroll {
       batchSize: mergedConfig.batchSize,
       documentClass: mergedConfig.documentClass,
     };
+
+    this.useLabelEndpoint = inferLabelMode;
+    this.continuation = null;
 
     void this.loadFeeds();
   }
@@ -101,41 +121,64 @@ export class Blogroll {
     }
 
     try {
-      const aggregatorData: AggregatorResponse = await fetchDigest({
-        proxyUrl: this.config.proxyUrl,
-        categoryLabel: this.config.categoryLabel,
-        page: this.currentPage,
-        limit: this.config.batchSize,
-        n: 1,
-      });
+      if (this.useLabelEndpoint) {
+        const { items, continuation } = await fetchLabelStream({
+          proxyUrl: this.config.proxyUrl,
+          label: this.config.categoryLabel,
+          n: this.config.batchSize,
+          continuation: this.continuation ?? undefined,
+        });
 
-      const aggregatorItems = aggregatorData.items;
-
-      if (!aggregatorItems || aggregatorItems.length === 0) {
-        if (this.currentPage === 1) {
-          feedContainer.innerHTML = MESSAGES.NO_POSTS;
+        if (!items || items.length === 0) {
+          if (this.currentPage === 1) feedContainer.innerHTML = MESSAGES.NO_POSTS;
+          return;
         }
-        return;
-      }
 
-      const transformed = this.transformFeeds(aggregatorItems);
+        const transformed = this.transformFeeds(items);
+        if (this.currentPage === 1) feedContainer.innerHTML = '';
+        this.renderFeeds(transformed);
 
-      if (this.currentPage === 1) {
-        feedContainer.innerHTML = '';
-      }
+        this.continuation = continuation ?? null;
+        this.hasMoreFeeds = Boolean(this.continuation) || items.length === this.config.batchSize;
+        if (this.hasMoreFeeds) this.ensureShowMoreLink(feedContainer);
+        else if (this.showMoreLink) this.showMoreLink.style.display = 'none';
+      } else {
+          const aggregatorData: AggregatorResponse = await fetchDigest({
+            proxyUrl: this.config.proxyUrl,
+            categoryLabel: this.config.categoryLabel,
+            page: this.currentPage,
+            limit: this.config.batchSize,
+            n: 1,
+          });
 
-      this.renderFeeds(transformed, aggregatorData);
+          const aggregatorItems = aggregatorData.items;
 
-      const { page, limit, totalItems } = aggregatorData;
-      this.hasMoreFeeds =
-        aggregatorItems.length === this.config.batchSize &&
-        page * limit < totalItems;
+          if (!aggregatorItems || aggregatorItems.length === 0) {
+            if (this.currentPage === 1) {
+              feedContainer.innerHTML = MESSAGES.NO_POSTS;
+            }
+            return;
+          }
 
-      if (this.hasMoreFeeds) {
-        this.ensureShowMoreLink(feedContainer);
-      } else if (this.showMoreLink) {
-        this.showMoreLink.style.display = 'none';
-      }
+          const transformed = this.transformFeeds(aggregatorItems);
+
+          if (this.currentPage === 1) {
+            feedContainer.innerHTML = '';
+          }
+
+          this.renderFeeds(transformed);
+
+          const { page, limit, totalItems } = aggregatorData;
+          this.hasMoreFeeds =
+            aggregatorItems.length === this.config.batchSize &&
+            page * limit < totalItems;
+
+          if (this.hasMoreFeeds) {
+            this.ensureShowMoreLink(feedContainer);
+          } else if (this.showMoreLink) {
+            this.showMoreLink.style.display = 'none';
+          }
+    }
     } catch (error) {
       console.error(MESSAGES.ERROR.LOAD_FEEDS_FAILED, error);
       feedContainer.innerHTML = MESSAGES.LOAD_FAILED;
@@ -164,10 +207,7 @@ export class Blogroll {
   /**
    * Renders feed items into the DOM.
    **/
-  private renderFeeds(
-    feeds: TransformedFeed[],
-    aggregatorData: AggregatorResponse
-  ): void {
+  private renderFeeds(feeds: TransformedFeed[]): void {
     const feedContainer = this.getFeedContainer();
     const fragment = document.createDocumentFragment();
 
@@ -177,17 +217,6 @@ export class Blogroll {
     });
 
     feedContainer.appendChild(fragment);
-
-    const { page, limit, items, totalItems } = aggregatorData;
-
-    this.hasMoreFeeds =
-      items.length === this.config.batchSize && page * limit < totalItems;
-
-    if (this.hasMoreFeeds) {
-      this.ensureShowMoreLink(feedContainer);
-    } else if (this.showMoreLink) {
-      this.showMoreLink.style.display = 'none';
-    }
   }
 
   /**

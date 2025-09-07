@@ -30,3 +30,17 @@ export interface TransformedFeed extends SortableFeed {
   postUrl: string;
   readingTime: string | null;
 }
+
+export interface LabelStreamRawItem {
+    title: string;
+    published?: number;
+    alternate?: Array<{ href: string }>;
+    summary?: { content: string };
+    origin?: { streamId?: string; title?: string; htmlUrl?: string };
+    author?: string;
+}
+
+export interface LabelStreamResponse {
+    items: LabelStreamRawItem[];
+    continuation?: string;
+}
