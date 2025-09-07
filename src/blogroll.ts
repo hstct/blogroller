@@ -30,9 +30,6 @@ export class Blogroll {
    * Initializes the Blogroll with a user config object.
    */
   public initialize(config: BlogrollUserConfig): void {
-    const mergedConfig = { ...CONFIG.defaults, ...config };
-
-    // Peek at container for implicit label-mode and label value
     const containerId = config.containerId || DEFAULT_CONTAINER_ID;
     const containerEl = typeof document !== 'undefined'
       ? document.getElementById(containerId)
@@ -42,10 +39,11 @@ export class Blogroll {
     const isSpecialId = containerEl?.id === 'rss-feed-label';
     const inferLabelMode = isSpecialId || dataEndpoint === 'label' || !!dataLabel;
 
-    // Fill categoryLabel from DOM if not provided
-    if (!mergedConfig.categoryLabel && dataLabel) {
-      (mergedConfig as any).categoryLabel = dataLabel;
-    }
+    const effectiveLabel = inferLabelMode && typeof dataLabel === 'string' && dataLabel.length > 0
+      ? dataLabel
+      : config.categoryLabel;
+
+    const mergedConfig = { ...CONFIG.defaults, ...config, categoryLabel: effectiveLabel };
 
     // Validate the configuration
     this.validateConfig(mergedConfig);
