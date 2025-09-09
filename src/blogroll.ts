@@ -25,6 +25,8 @@ export class Blogroll {
   private hasMoreFeeds = false;
   private useLabelEndpoint = false;
   private continuation: string | null = null;
+  private forceShowAll = false;
+  private draining = false;
 
   /**
    * Initializes the Blogroll with a user config object.
@@ -38,6 +40,13 @@ export class Blogroll {
     const dataEndpoint = containerEl?.dataset?.endpoint;
     const isSpecialId = containerEl?.id === 'rss-feed-label';
     const inferLabelMode = isSpecialId || dataEndpoint === 'label' || !!dataLabel;
+
+    const showAttr = containerEl?.dataset?.show?.toLowerCase();
+    const showAllAttr = containerEl?.dataset?.showAll?.toLowerCase();
+    this.forceShowAll =
+      showAttr === 'all' ||
+      showAllAttr === 'true' ||
+      showAllAttr === '';
 
     const effectiveLabel = inferLabelMode && typeof dataLabel === 'string' && dataLabel.length > 0
       ? dataLabel
@@ -53,7 +62,7 @@ export class Blogroll {
         ? mergedConfig.proxyUrl
         : mergedConfig.proxyUrl + '/',
       categoryLabel: mergedConfig.categoryLabel,
-      containerId: mergedConfig.containerId || DEFAULT_CONTAINER_ID,
+      containerId: containerId,
       batchSize: mergedConfig.batchSize,
       documentClass: mergedConfig.documentClass,
     };
@@ -218,17 +227,121 @@ export class Blogroll {
   }
 
   /**
+   * Load all remaining pages via continuation tokens.
+   */
+  private async loadAllRemainingLabel(): Promise<void> {
+    if (!this.useLabelEndpoint || this.draining) return;
+    this.draining = true;
+    try {
+      if (this.showMoreLink) {
+        this.showMoreLink.textContent = 'Loading...';
+        this.showMoreLink.style.pointerEvents = 'none';
+      }
+      const MAX_FETCHES = 50; // safety cap
+      let iterations = 0;
+      while (this.continuation && iterations < MAX_FETCHES) {
+        const { items, continuation } = await fetchLabelStream({
+          proxyUrl: this.config.proxyUrl,
+          label: this.config.categoryLabel,
+          n: this.config.batchSize,
+          continuation: this.continuation,
+        });
+        if (!items || items.length === 0) break;
+        const transformed = this.transformFeeds(items);
+        this.renderFeeds(transformed);
+        this.continuation = continuation ?? null;
+        iterations++;
+      }
+      this.hasMoreFeeds = Boolean(this.continuation);
+      if (this.showMoreLink) {
+        if (this.hasMoreFeeds) {
+          this.showMoreLink.textContent = 'Show All';
+          this.showMoreLink.style.pointerEvents = '';
+        } else {
+          this.showMoreLink.style.display = 'none';
+        }
+      }
+    } catch (e) {
+      console.error(MESSAGES.ERROR.LOAD_FEEDS_FAILED, e);
+      const feedContainer = this.getFeedContainer();
+      feedContainer.insertAdjacentHTML('beforeend', MESSAGES.LOAD_FAILED);
+      if (this.showMoreLink) {
+        this.showMoreLink.textContent = 'Show All';
+        this.showMoreLink.style.pointerEvents = ''
+      }
+    } finally {
+      this.draining = false;
+    }
+  }
+
+  /**
+   * Load all remaining pages by paging until complete.
+   */
+  private async loadAllRemainingDigest(): Promise<void> {
+    if (this.useLabelEndpoint || this.draining) return;
+    this.draining = true;
+    try {
+      if (this.showMoreLink) {
+        this.showMoreLink.textContent = 'Loading...';
+        this.showMoreLink.style.pointerEvents = 'none';
+      }
+      const limit = this.config.batchSize;
+      const MAX_FETCHES = 100;
+      let nextPage = this.currentPage + 1;
+      let iterations = 0;
+      while (iterations < MAX_FETCHES) {
+        const data: AggregatorResponse = await fetchDigest({
+          proxyUrl: this.config.proxyUrl,
+          categoryLabel: this.config.categoryLabel,
+          page: nextPage,
+          limit,
+          n: 1,
+        });
+        const items = data.items || [];
+        if (items.length === 0) break;
+        const transformed = this.transformFeeds(items);
+        this.renderFeeds(transformed);
+        this.currentPage = data.page;
+        iterations++;
+        if (items.length < limit || data.page * data.limit >= data.totalItems) break;
+        nextPage = data.page + 1;
+      }
+      this.hasMoreFeeds = false;
+      if (this.showMoreLink) this.showMoreLink.style.display = 'none';
+    } catch (e) {
+      console.error(MESSAGES.ERROR.LOAD_FEEDS_FAILED, e);
+      const feedContainer = this.getFeedContainer();
+      feedContainer.insertAdjacentHTML('beforeend', MESSAGES.LOAD_FAILED);
+      if (this.showMoreLink) {
+        this.showMoreLink.textContent = 'Show All';
+        this.showMoreLink.style.pointerEvents = '';
+      }
+    } finally {
+      this.draining = false;
+    }
+  }
+
+  /**
    * Ensures a "Show More" link is present and wired up to load more feeds.
    */
   private ensureShowMoreLink(feedContainer: HTMLElement): void {
     if (!this.showMoreLink) {
       this.showMoreLink = createShowMoreLink();
+      if (this.forceShowAll) this.showMoreLink.textContent = 'Show All';
       feedContainer.parentElement?.appendChild(this.showMoreLink);
 
       this.showMoreLink.addEventListener('click', (event) => {
         event.preventDefault();
-        this.currentPage++;
-        this.loadFeeds();
+        if (this.forceShowAll) {
+          if (this.useLabelEndpoint) {
+            void this.loadAllRemainingLabel();
+          } else {
+            void this.loadAllRemainingDigest();
+          }
+        } else {
+          this.currentPage++;
+          this.loadFeeds();
+        }
       });
     }
     this.showMoreLink.style.display = 'block';
